@@ -1,42 +1,120 @@
 package com.accountbook.backend.storage.entity;
 
-import com.accountbook.backend.util.TimeUtils;
+import com.accountbook.backend.common.util.TimeUtils;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
-
-
-// 账单实体（对应需求Req002的核心字段）
 public class Bill {
-    private String m_time; // 时间（格式：YYYY-MM-DD HH:MM）
-    private String m_type; // 收支类型（收入/支出）
-    private double m_amount; // 金额（支持小数）
-    private String m_category; // 大类（如饮食）
-    private String m_detail; // 具体说明（如外卖）
-    private String m_remark; // 备注
+    private Integer id; // 新增：数据库自增的id
+    private String time; // 时间（格式：YYYY-MM-DD HH:MM）
+    private Integer type; // 收支类型（用tinyint对应，比如1代表收入，2代表支出）
+    private Integer categoryId; // 大类ID（关联category表）
+    private Integer specificTypeId; // 具体类型ID（关联specific_type表）
+    private BigDecimal amount; // 金额
+    private String remark; // 备注
 
-    //time: YYYY-MM-DD
-    public Bill(String time,String type,double amount,String category,String detail,String remark)
-    {
-        m_time=time+" "+TimeUtils.getInstance().getCurrentTime(); //拼接：YYYY_MM_DD HH:MM
-        m_type=type;
-        m_amount=amount;
-        m_category=category;
-        m_detail=detail;
-        m_remark=remark;
+    //分类名称（从category表查询）
+    private String categoryName;
+    // 具体类型名称（从specific_type表查询）
+    private String specificTypeName;
+    
+    public Bill(){
+
     }
 
-    //打印自己
-    public void PrintSelf()
-    {
-        System.out.printf("m_time=%s,m_type=%s,m_amount=%.2f,m_category=%s,m_detail=%s,m_remark=%s\n",
-                                    m_time,m_type,m_amount,m_category,m_detail,m_remark);
+    // 构造方法：不需要id（id由数据库生成）
+    public Bill(String time, Integer type, Integer categoryId, Integer specificTypeId, BigDecimal amount, String remark) {
+        if(time==null)
+        {
+            this.time=TimeUtils.getInstance().getCurrentTime();
+        }
+        else this.time = time + " " + TimeUtils.getInstance().getCurrentTimeHHmm();
+        this.type = type;
+        this.categoryId = categoryId;
+        this.specificTypeId = specificTypeId;
+        this.amount = amount.setScale(2, RoundingMode.HALF_UP);
+        this.remark = remark;
     }
 
-    //简单测试
-    public static void main(String[] args)
-    {
-        Bill b1=new Bill("2025-10-18","支出",23.567,"饮食","午餐","吃了一顿火锅");
-        b1.PrintSelf();
-        Bill b2=new Bill("2025-10-18","支出",24,"饮食","无","无");
-        b2.PrintSelf();
+    // getter 和 setter 方法
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
+    public Integer getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Integer categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public Integer getSpecificTypeId() {
+        return specificTypeId;
+    }
+
+    public void setSpecificTypeId(Integer specificTypeId) {
+        this.specificTypeId = specificTypeId;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    // Getter & Setter（省略原有方法，新增以下）
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public String getSpecificTypeName() {
+        return specificTypeName;
+    }
+
+    public void setSpecificTypeName(String specificTypeName) {
+        this.specificTypeName = specificTypeName;
+    }
+
+    // 打印方法（包含名称）
+    public void printSelf() {
+        System.out.printf(
+            "id=%d, time=%s, type=%d, categoryId=%d, categoryName=%s, specificTypeId=%d, specificTypeName=%s, amount=%.2f, remark=%s\n",
+            id, time, type, categoryId, categoryName, specificTypeId, specificTypeName, amount.doubleValue(), remark
+        );
     }
 }

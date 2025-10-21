@@ -20,7 +20,14 @@ public class BudgetDAOImpl extends BaseDAO implements BudgetDAO{
      * @return 影响行数
      */
     public int addBudget(Map<String, Object> budgetMap) {
-        return super.insert(TABLE_BUDGET, budgetMap);
+        try
+        {
+            return super.insert(TABLE_BUDGET, budgetMap);
+        }catch(Exception e)
+        {
+            System.err.println(e);
+            return -1;
+        }
     }
 
     /**
@@ -31,7 +38,14 @@ public class BudgetDAOImpl extends BaseDAO implements BudgetDAO{
      * @return 影响行数
      */
     public int updateBudget(Map<String, Object> fieldMap, String condition, Object... params) {
-        return super.update(TABLE_BUDGET, fieldMap, condition, params);
+        try
+        {
+            return super.update(TABLE_BUDGET, fieldMap, condition, params);
+        }catch(Exception e)
+        {
+            System.err.println(e);
+            return -1;
+        }
     }
 
     /**
@@ -41,7 +55,14 @@ public class BudgetDAOImpl extends BaseDAO implements BudgetDAO{
      * @return 影响行数
      */
     public int deleteBudget(String condition, Object... params) {
-        return super.delete(TABLE_BUDGET, condition, params);
+        try
+        {
+            return super.delete(TABLE_BUDGET, condition, params);
+        }catch(Exception e)
+        {
+            System.err.println(e);
+            return -1;
+        }
     }
 
     /**
@@ -52,7 +73,14 @@ public class BudgetDAOImpl extends BaseDAO implements BudgetDAO{
      * @return 结果列表（Map<字段名, 值>）
      */
     public List<Map<String, Object>> queryBudgets(String fields, String condition, Object... params) {
-        return super.query(TABLE_BUDGET, fields, condition, params);
+        try
+        {
+            return super.query(TABLE_BUDGET, fields, condition, params);
+        }catch(Exception e)
+        {
+            System.err.println(e);
+            return null;
+        }
     }
 
     /**
@@ -62,6 +90,13 @@ public class BudgetDAOImpl extends BaseDAO implements BudgetDAO{
      * @return 结果列表（Map<字段名, 值>）
      */
     public List<Map<String, Object>> queryBudgetsWithJoin(String customSql, Object... params) {
-        return super.queryByCustomSql(customSql, params);
+        try
+        {
+            return super.queryByCustomSql(customSql, params);
+        }catch(Exception e)
+        {
+            System.err.println(e);
+            return null;
+        }
     }
 }

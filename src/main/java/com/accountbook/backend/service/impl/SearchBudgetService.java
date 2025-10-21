@@ -12,7 +12,7 @@ public class SearchBudgetService implements BusinessService<Budget,List<Budget>>
 
     @Override
     /*budget中非null属性为”搜索条件“，返回符合条件的”budget列表“ */
-    public List<Budget> execute(Budget budget) {
+    public List<Budget> execute(Budget budget)  throws Exception {
         System.out.println("执行删除预算业务");
         return null;
     }

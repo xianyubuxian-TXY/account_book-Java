@@ -132,7 +132,7 @@ public class BudgetDAOTest {
      * 初始化测试大类（饮食）
      */
     private static void initTestCategory() {
-        try (Connection conn = DBUtil.getConnection()) {
+        try (Connection conn = DBUtil.getAccountBookConnection()) {
             String sql = "INSERT IGNORE INTO category (name) VALUES ('饮食')";
             conn.createStatement().executeUpdate(sql);
         } catch (SQLException e) {

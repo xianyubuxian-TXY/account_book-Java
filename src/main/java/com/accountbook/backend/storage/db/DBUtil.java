@@ -1,48 +1,56 @@
 package com.accountbook.backend.storage.db;
 
 import java.io.InputStream;
-import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
 /*数据库工具类：读取配置文件并获取数据库连接 */
 public class DBUtil {
     private static final Properties props = new Properties();
+    // 目标业务数据库名（常量定义，便于维护）
+    private static final String TARGET_DB = "account_book";
 
-    // 新增：提供公共方法获取 props 对象
+    private DBUtil() {
+        throw new AssertionError("工具类禁止实例化");
+    }
+
     public static Properties getProps() {
         return props;
     }
 
-    // 静态块：加载配置文件（项目启动时执行一次）
     static {
         try (InputStream in = DBUtil.class.getClassLoader().getResourceAsStream("db.properties")) {
-            props.load(in); // 加载 resources 目录下的配置文件
-            // 加载 MySQL 8.0 驱动（可选，MySQL 8.0 驱动会自动注册，但显式加载更稳妥）
+            props.load(in);
             Class.forName(props.getProperty("db.driver"));
         } catch (Exception e) {
-            // 加载失败时抛出异常，提示用户检查配置
             throw new RuntimeException("数据库配置错误或驱动缺失：" + e.getMessage());
         }
     }
 
-    // 获取数据库连接（供外部调用）
-    // 修正后的 getConnection 方法（强制切换数据库）
-    public static Connection getConnection() throws SQLException {
+        /**
+     * 获取基础连接（仅连接服务器，不指定数据库）
+     * 适用于数据库初始化（创建库、切换库等操作）
+     */
+    public static Connection getBaseConnection() throws SQLException {
         String url = props.getProperty("db.url");
         String user = props.getProperty("db.user");
         String password = props.getProperty("db.password");
+        return DriverManager.getConnection(url, user, password);
+    }
 
-        // 获取连接
-        Connection conn = DriverManager.getConnection(url, user, password);
-        
+    // 获取基础连接（仅连接服务器，不指定数据库）
+    public static Connection getAccountBookConnection() throws SQLException {
+        // 先获取基础连接（连接服务器）
+        Connection conn = getBaseConnection();
         // 强制切换到 account_book 数据库
         try (Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate("USE account_book");
+            stmt.executeUpdate("USE " + TARGET_DB);
         }
-        
         return conn;
     }
+
+    
 }

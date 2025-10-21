@@ -1,7 +1,9 @@
 package com.accountbook.proxy;
 
+import com.accountbook.backend.common.exception.BillBusinessException;
 import com.accountbook.backend.factory.BusinessFactory;
 import com.accountbook.backend.service.BusinessService;
+import com.accountbook.proxy.request.bill.BillDeleteParams;
 
 public class ServiceProxy {
     private final BusinessFactory businessFactory;
@@ -20,14 +22,13 @@ public class ServiceProxy {
     public <T, R> BackendResponse<R> handleRequest(FrontendRequest<T> request) {
         // 1. 校验请求合法性
         if (request == null || request.getType() == null) {
-            return BackendResponse.fail(BackendResponse.Code.INVALID_REQUEST, "请求对象或请求类型不能为空");
+            return BackendResponse.fail( "请求对象或请求类型不能为空");
         }
 
         // 2. 获取对应业务服务
         BusinessService<T, R> service = getBusinessService(request.getType());
         if (service == null) {
-            return BackendResponse.fail(BackendResponse.Code.INVALID_REQUEST, 
-                    "无效的请求类型：" + request.getType());
+            return BackendResponse.fail("无效的请求类型：" + request.getType());
         }
 
         try {
@@ -40,18 +41,21 @@ public class ServiceProxy {
             // 4. 返回成功响应（携带业务结果）
             return BackendResponse.success("处理成功", result);
         } catch (IllegalArgumentException e) {
-            // 5. 处理参数非法异常（400错误）
-            return BackendResponse.fail(BackendResponse.Code.INVALID_REQUEST, 
-                    "参数错误：" + e.getMessage());
+            // 5. 处理参数非法异常
+            return BackendResponse.fail("参数错误：" + e.getMessage());
         } catch (NullPointerException e) {
-            // 6. 处理空指针异常（细化错误类型）
-            return BackendResponse.fail(BackendResponse.Code.INVALID_REQUEST, 
-                    "关键参数为空：" + e.getMessage());
+            // 6. 处理空指针异常
+            return BackendResponse.fail("关键参数为空：" + e.getMessage());
+        } catch (BillBusinessException e) {
+            // 7. 处理账单业务异常
+            return BackendResponse.fail(e.getMessage());
         } catch (Exception e) {
-            // 7. 处理通用业务异常（500错误）
-            // 生产环境建议记录日志：log.error("业务处理失败", e);
-            return BackendResponse.fail(BackendResponse.Code.ERROR, 
-                    "处理失败：" + e.getMessage());
+            // 8. 捕获所有其他检查型/运行时异常（兜底处理）
+            // 建议记录详细日志，便于排查问题（如SQL异常、IO异常等）
+            System.err.println("系统异常：" + e.getMessage());
+            e.printStackTrace(); // 生产环境建议用日志框架（如SLF4J）记录
+            // 前端展示通用提示，避免暴露敏感信息
+            return BackendResponse.fail("系统繁忙，请稍后重试");
         }
     }
 
@@ -74,27 +78,33 @@ public class ServiceProxy {
         };
     }
 
-    /**
-     * 可选：参数合法性校验（根据具体业务需求扩展）
-     * @param requestType 请求类型
-     * @param params 待校验参数
-     */
-    private <T> void validateParams(FrontendRequest.RequestType requestType, T params) {
-        switch (requestType) {
-            case ADD_BILL:
-            case CHANGE_BILL:
-                if (params == null) {
-                    throw new IllegalArgumentException(requestType.name() + "请求参数不能为空");
-                }
-                break;
-            case DELETE_BILL:
-                if (params == null || !(params instanceof Long) || (Long) params <= 0) {
-                    throw new IllegalArgumentException("删除账单的ID必须为正整数");
-                }
-                break;
-            // 其他请求类型的参数校验可按需添加
-            default:
-                break;
-        }
+/**
+ * 可选：参数合法性校验（根据具体业务需求扩展）
+ * @param requestType 请求类型
+ * @param params 待校验参数
+ */
+private <T> void validateParams(FrontendRequest.RequestType requestType, T params) {
+    switch (requestType) {
+        case ADD_BILL:
+        case CHANGE_BILL:
+            if (params == null) {
+                throw new IllegalArgumentException(requestType.name() + "请求参数不能为空");
+            }
+            break;
+        case DELETE_BILL:
+            // 修正：校验参数是DeleteBillParams类型，且billId为正整数
+            if (params == null || !(params instanceof BillDeleteParams)) {
+                throw new IllegalArgumentException("删除账单请求参数不能为空且必须为DeleteBillParams类型");
+            }
+            BillDeleteParams deleteParams = (BillDeleteParams) params;
+            Integer billId = deleteParams.getBillId();
+            if (billId == null || billId <= 0) {
+                throw new IllegalArgumentException("删除账单的ID必须为正整数（当前值：" + billId + "）");
+            }
+            break;
+        // 其他请求类型的参数校验可按需添加
+        default:
+            break;
     }
+}
 }

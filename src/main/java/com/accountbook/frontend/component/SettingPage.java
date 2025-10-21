@@ -1,21 +1,20 @@
 package com.accountbook.frontend.component;
 
+import com.accountbook.frontend.PageComponent;
+
 /*系统设置页面 */
-public class SettingPage implements PageComponent {
+public class SettingPage extends BasePage{
     @Override
-    public void render() {
-        System.out.println("渲染系统设置页：设置账户信息");
+    protected void initPage() {
+        // 页面初始化逻辑（如绑定事件、加载数据）
+        System.out.println("首页初始化完成");
     }
 
     @Override
-    public void initLayout() {
-        System.out.println("初始化可视化页布局：左侧功能栏，右侧账户设置功能");
+    protected void renderPage() {
+        // 渲染页面时调用Helper查询数据（使用共享实例）
+
     }
 
-    @Override
-    public boolean sendRequest(String data)
-    {
-        System.out.println("用户进行操作，将操作发送给中间代理");
-        return true; 
-    }
+    // 其他页面功能（如新增账单按钮点击事件）
 }

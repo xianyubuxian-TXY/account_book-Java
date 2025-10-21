@@ -4,85 +4,61 @@ import java.io.Serializable;
 
 /**
  * 后端统一响应对象，用于返回给前端渲染
- * 采用标准JSON结构：状态码 + 消息 + 泛型数据
+ * 仅通过success判断操作成败，结构简洁，聚焦核心结果反馈
+ * @param <T> 响应业务数据类型（如账单详情、操作结果）
  */
 public class BackendResponse<T> implements Serializable {
     // 序列化版本号，确保前后端传输稳定
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 响应状态码枚举
-     * 扩展了具体状态码值，方便前端快速判断（如HTTP状态码规范）
-     */
-    public enum Code {
-        OK(200, "处理成功"),
-        ERROR(500, "处理失败"),
-        INVALID_REQUEST(400, "无效请求参数"),
-        NOT_FOUND(404, "资源不存在"),
-        UNAUTHORIZED(401, "未授权访问");
-
-        private final int code;       // 数字状态码（前端可通过此判断，比字符串更高效）
-        private final String defaultMsg; // 默认描述
-
-        Code(int code, String defaultMsg) {
-            this.code = code;
-            this.defaultMsg = defaultMsg;
-        }
-
-        public int getCode() {
-            return code;
-        }
-
-        public String getDefaultMsg() {
-            return defaultMsg;
-        }
-    }
-
-    // 状态码（数字形式，前端判断更方便）
-    private int code;
-    // 响应消息（成功/失败描述，前端可直接展示）
+    // 核心判断：true=操作成功，false=操作失败
+    private boolean success;
+    // 响应消息：成功/失败的具体描述（前端可直接展示，如“删除账单成功”“账单ID不能为空”）
     private String message;
-    // 响应数据（泛型类型，明确数据类型，避免前端类型转换错误）
+    // 响应数据：成功时返回具体业务数据（如账单列表、预算详情）
     private T data;
 
     /**
-     * 快速创建成功响应（带数据）
+     * 快速创建【成功】响应（带业务数据+默认提示）
+     * @param data 业务数据（如BillSingleResponse、BudgetListResponse）
+     * @return 成功响应对象
      */
     public static <T> BackendResponse<T> success(T data) {
-        return new BackendResponse<>(Code.OK, Code.OK.getDefaultMsg(), data);
+        return new BackendResponse<>(true, "处理成功", data);
     }
 
     /**
-     * 快速创建成功响应（自定义消息+数据）
+     * 快速创建【成功】响应（带业务数据+自定义提示）
+     * @param message 自定义成功提示（如“新增预算成功，本月预算已生效”）
+     * @param data 业务数据
+     * @return 成功响应对象
      */
     public static <T> BackendResponse<T> success(String message, T data) {
-        return new BackendResponse<>(Code.OK, message, data);
+        return new BackendResponse<>(true, message, data);
     }
 
     /**
-     * 快速创建失败响应（基于错误类型）
+     * 快速创建【失败】响应（带自定义失败提示）
+     * @param message 失败原因描述（如“账单ID不存在，删除失败”“金额不能为负数”）
+     * @return 失败响应对象（data默认null）
      */
-    public static <T> BackendResponse<T> fail(Code errorCode, String message) {
-        return new BackendResponse<>(errorCode, message, null);
+    public static <T> BackendResponse<T> fail(String message) {
+        return new BackendResponse<>(false, message, null);
     }
 
     /**
-     * 快速创建失败响应（默认消息）
+     * 私有构造：通过静态方法创建响应，避免手动设置success导致状态混乱
+     * 确保响应对象创建时，success、message、data的逻辑一致性
      */
-    public static <T> BackendResponse<T> fail(Code errorCode) {
-        return new BackendResponse<>(errorCode, errorCode.getDefaultMsg(), null);
-    }
-
-    // 私有构造，通过静态方法创建响应，确保状态一致
-    private BackendResponse(Code code, String message, T data) {
-        this.code = code.getCode();
+    private BackendResponse(boolean success, String message, T data) {
+        this.success = success;
         this.message = message;
         this.data = data;
     }
 
-    // Getter（无需Setter，响应对象创建后不可修改，避免数据混乱）
-    public int getCode() {
-        return code;
+    // Getter：响应对象创建后不可修改，避免后续代码篡改结果（无Setter）
+    public boolean isSuccess() {
+        return success;
     }
 
     public String getMessage() {
@@ -93,3 +69,4 @@ public class BackendResponse<T> implements Serializable {
         return data;
     }
 }
+

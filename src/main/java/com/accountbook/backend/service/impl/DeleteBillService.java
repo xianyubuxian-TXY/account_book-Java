@@ -1,15 +1,27 @@
 package com.accountbook.backend.service.impl;
 
+import com.accountbook.backend.common.exception.BillBusinessException;
 import com.accountbook.backend.service.BusinessService;
 import com.accountbook.backend.storage.dao.BillDAO;
 import com.accountbook.backend.storage.dao.factory.DAOFactory;
+import com.accountbook.proxy.request.bill.BillDeleteParams;
+import com.accountbook.proxy.response.bill.BillDeleteResponse;
 
-public class DeleteBillService implements BusinessService<Long,Void>{
+public class DeleteBillService implements BusinessService<BillDeleteParams,BillDeleteResponse>{
     private final BillDAO billBAO=DAOFactory.getBillDAO();
     
     @Override
-    public Void execute(Long billId) throws Exception{
-        System.out.println("执行预算管理业务：校验支出占比并触发预警");
-        return null;
+    public BillDeleteResponse execute(BillDeleteParams params) throws Exception{
+        System.out.println("执行bill删除服务");
+        Integer id=params.getBillId();
+        Integer ret=billBAO.deleteBillById(id);
+        if(ret==-1 || ret==0)
+        {
+            throw new BillBusinessException("delete bill failed");
+        }
+        else
+        {
+            return new BillDeleteResponse(params.getBillId());
+        }
     }
 }

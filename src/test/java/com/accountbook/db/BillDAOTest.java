@@ -137,7 +137,7 @@ public class BillDAOTest {
      * 初始化测试用的大类和具体类型，并动态获取ID
      */
     private static void initTestCategoryAndSpecificType() {
-        try (Connection conn = DBUtil.getConnection()) {
+        try (Connection conn = DBUtil.getAccountBookConnection()) {
             // 开启事务
             conn.setAutoCommit(false);
     

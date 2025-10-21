@@ -41,6 +41,13 @@
             <version>5.9.2</version>
             <scope>test</scope>
         </dependency>
+        <!-- Mockito 适配 JUnit 5 -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

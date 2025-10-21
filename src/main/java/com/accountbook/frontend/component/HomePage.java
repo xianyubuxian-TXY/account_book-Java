@@ -1,23 +1,25 @@
 package com.accountbook.frontend.component;
 
-/*系统首页*/
-public class HomePage implements PageComponent {
+import com.accountbook.proxy.response.bill.BillListResponse;
+import java.math.BigDecimal;
+
+/**
+ * 首页示例：继承基类，直接使用注入的共享Helper
+ */
+public class HomePage extends BasePage {
+
     @Override
-    public void render()
-    {
-        System.out.println("渲染系统首页：展示月度财务数据与最近账单列表");
+    protected void initPage() {
+        // 页面初始化逻辑（如绑定事件、加载数据）
+        System.out.println("首页初始化完成");
     }
 
     @Override
-    public void initLayout()
-    {
-        System.out.println("初始化首页布局：左侧功能选项栏，右侧账单展示区");
+    protected void renderPage() {
+        // 渲染页面时调用Helper查询数据（使用共享实例）
+
     }
 
-    @Override
-    public boolean sendRequest(String data)
-    {
-        System.out.println("用户进行操作，将操作发送给中间代理");
-        return true; 
-    }
+    // 其他页面功能（如新增账单按钮点击事件）
+
 }

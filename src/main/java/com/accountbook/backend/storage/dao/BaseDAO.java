@@ -1,5 +1,6 @@
 package com.accountbook.backend.storage.dao;
 
+import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,55 +21,65 @@ public abstract class BaseDAO {
 
     // 获取数据库连接（复用DBUtil）
     protected Connection getConnection() throws SQLException {
-        return DBUtil.getConnection();
+        return DBUtil.getAccountBookConnection();
     }
 
     /**
      * 通用插入操作
      * @param tableName 表名
      * @param fieldMap 字段-值映射（key:字段名，value:字段值）
-     * @return 影响行数（1=成功，0=失败）
+     * @return 主键
      */
     public int insert(String tableName, Map<String, Object> fieldMap) {
         if (fieldMap.isEmpty()) {
             throw new IllegalArgumentException("插入字段不能为空");
         }
-
-        // 拼接SQL：INSERT INTO 表名 (字段1,字段2...) VALUES (?,?...)
+    
+        // 拼接SQL
         StringBuilder sql = new StringBuilder("INSERT INTO " + tableName + " (");
         StringBuilder placeholders = new StringBuilder(") VALUES (");
-
         for (String field : fieldMap.keySet()) {
             sql.append(field).append(",");
             placeholders.append("?,");
         }
-
-        // 移除最后一个逗号
         sql.deleteCharAt(sql.length() - 1);
         placeholders.deleteCharAt(placeholders.length() - 1);
         sql.append(placeholders).append(")");
-
+    
         try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
-
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
+    
             // 设置参数
             int index = 1;
             for (Object value : fieldMap.values()) {
                 setParameter(pstmt, index++, value);
             }
-
-            return pstmt.executeUpdate();
+    
+            // 执行插入
+            pstmt.executeUpdate();
+    
+            // 获取生成的主键并返回
+            try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1); // 正常返回主键（int类型）
+                }
+                // 如果未获取到主键，抛出异常（覆盖此路径，无需返回）
+                throw new RuntimeException("未获取到生成的主键");
+            }
+    
         } catch (SQLException e) {
+            // 异常情况下抛出运行时异常（覆盖此路径，无需返回）
             throw new RuntimeException("插入数据失败：" + e.getMessage(), e);
         }
+        // 注意：由于上述代码中所有路径要么return，要么throw，因此无需额外return
     }
 
     /**
      * 通用更新操作
      * @param tableName 表名
-     * @param fieldMap 要更新的字段-值映射
-     * @param condition 条件（如"id=?"）
-     * @param conditionParams 条件参数
+     * @param fieldMap 要更新的字段-值映射：如<"amount",300.0>
+     * @param condition 条件（如"id<? and amount>?"）——> ?：占位符
+     * @param conditionParams 条件参数：?占位符的值
      * @return 影响行数
      */
     public int update(String tableName, Map<String, Object> fieldMap, String condition, Object... conditionParams) {
@@ -78,30 +89,34 @@ public abstract class BaseDAO {
         if (condition == null || condition.trim().isEmpty()) {
             throw new IllegalArgumentException("更新条件不能为空（防止全表更新）");
         }
-
+    
         // 拼接SQL：UPDATE 表名 SET 字段1=?,字段2=?... WHERE 条件
         StringBuilder sql = new StringBuilder("UPDATE " + tableName + " SET ");
         for (String field : fieldMap.keySet()) {
             sql.append(field).append("=?,");
         }
-        sql.deleteCharAt(sql.length() - 1);
+    
+        sql.deleteCharAt(sql.length() - 1); // 删除末尾逗号
         sql.append(" WHERE ").append(condition);
-
+    
         try (Connection conn = getConnection();
+             // 移除 RETURN_GENERATED_KEYS 参数（UPDATE 不需要）
              PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
-
-            // 设置更新字段参数
+            
+            // 设置更新字段的参数
             int index = 1;
             for (Object value : fieldMap.values()) {
                 setParameter(pstmt, index++, value);
             }
-
+    
             // 设置条件参数
             for (Object param : conditionParams) {
                 setParameter(pstmt, index++, param);
             }
-
+    
+            // 执行更新，返回受影响的行数（核心修正）
             return pstmt.executeUpdate();
+    
         } catch (SQLException e) {
             throw new RuntimeException("更新数据失败：" + e.getMessage(), e);
         }
@@ -110,26 +125,28 @@ public abstract class BaseDAO {
     /**
      * 通用删除操作
      * @param tableName 表名
-     * @param condition 条件（如"id=?"）
-     * @param conditionParams 条件参数
+     * @param condition 条件（如"id<? and amount>?"）——> ?：占位符
+     * @param conditionParams 条件参数：?占位符的值
      * @return 影响行数
      */
     public int delete(String tableName, String condition, Object... conditionParams) {
         if (condition == null || condition.trim().isEmpty()) {
             throw new IllegalArgumentException("删除条件不能为空（防止全表删除）");
         }
-
+    
         String sql = "DELETE FROM " + tableName + " WHERE " + condition;
-
+    
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
+    
             // 设置条件参数
             for (int i = 0; i < conditionParams.length; i++) {
                 setParameter(pstmt, i + 1, conditionParams[i]);
             }
-
+    
+            // 执行删除，返回受影响的行数（核心修正）
             return pstmt.executeUpdate();
+    
         } catch (SQLException e) {
             throw new RuntimeException("删除数据失败：" + e.getMessage(), e);
         }

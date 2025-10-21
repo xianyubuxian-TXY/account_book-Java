@@ -25,7 +25,7 @@ public class DBSql {
 
     // 获取数据库连接（复用DBUtil）
     protected Connection getConnection() throws SQLException {
-        return DBUtil.getConnection();
+        return DBUtil.getAccountBookConnection();
     }
 
     /**
