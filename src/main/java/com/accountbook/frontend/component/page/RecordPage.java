@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.Date; // 导入 Date 类
 
 public class RecordPage implements PageDrawer {
 
@@ -35,7 +36,6 @@ public class RecordPage implements PageDrawer {
     private static final int SYSTEM_DEFAULT_ID = 1;
 
     private static final String HINT_DATE   = "例如 2025-10-22";
-    private static final String HINT_TIME   = "例如 22:12";
     private static final String HINT_AMOUNT = "例如 58.50";
     private static final String HINT_REMARK = "例如 晚餐聚餐";
 
@@ -85,9 +85,13 @@ public class RecordPage implements PageDrawer {
         contentPanel.add(new JLabel("时间（时分）："), gbc);
         gbc.gridx = 1;
         timeField = new JTextField(15);
-        timeField.setText(HINT_TIME);
-        timeField.setForeground(Color.GRAY);
-        addHint(timeField, HINT_TIME);
+        // --- MODIFICATION START ---
+        // 自动获取系统当前时间并填入
+        timeField.setText(timeFormatter.format(new Date()));
+        timeField.setForeground(Color.BLACK); // 自动填入后，颜色设为黑色
+        // 移除 addHint 调用，因为不再需要提示
+        // addHint(timeField, HINT_TIME);
+        // --- MODIFICATION END ---
         contentPanel.add(timeField, gbc);
 
         // 收支类型
@@ -166,9 +170,15 @@ public class RecordPage implements PageDrawer {
         });
     }
 
+    // --- MODIFICATION START ---
+    // isHint 方法不再需要检查 timeField 的 HINT_TIME
     private boolean isHint(JTextField field, String hint) {
-        return hint.equals(field.getText()) || Color.GRAY.equals(field.getForeground());
+        // 对于 timeField，因为它自动填充，所以不应该被视为 HINT
+        // 除非它的内容是空的，或者颜色是灰色（但我们设置了黑色）
+        // 这里的逻辑可以简化为只检查是否是传入的 hint
+        return hint.equals(field.getText()) && Color.GRAY.equals(field.getForeground());
     }
+    // --- MODIFICATION END ---
 
     /* 下拉加载和右键菜单 */
 
@@ -393,7 +403,7 @@ public class RecordPage implements PageDrawer {
                 return;
             }
 
-            if (isHint(amountField, HINT_AMOUNT)) {
+            if (isHint(amountField, HINT_AMOUNT)) { // isHint 已经更新，这里只检查 HINT_AMOUNT
                 JOptionPane.showMessageDialog(null, "请输入金额", "错误", JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -431,7 +441,9 @@ public class RecordPage implements PageDrawer {
                 editingBillId = null;
             }
 
-            clearForm();
+            // --- MODIFICATION START ---
+            clearForm(); // 清除表单并重新加载当前时间
+            // --- MODIFICATION END ---
             loadCategoryOptions();
             updateSpecificOptionsByCategory();
 
@@ -445,12 +457,15 @@ public class RecordPage implements PageDrawer {
             JOptionPane.showMessageDialog(null, "请输入年月日", "错误", JOptionPane.ERROR_MESSAGE);
             return null;
         }
-        if (isHint(timeField, HINT_TIME)) {
+        // --- MODIFICATION START ---
+        // timeField 不再有 HINT_TIME，所以直接检查是否为空
+        String timeStr = timeField.getText().trim();
+        if (timeStr.isEmpty()) {
             JOptionPane.showMessageDialog(null, "请输入时分", "错误", JOptionPane.ERROR_MESSAGE);
             return null;
         }
+        // --- MODIFICATION END ---
         String dateStr = dateField.getText().trim();
-        String timeStr = timeField.getText().trim();
         try {
             dateFormatter.parse(dateStr);
         } catch (ParseException e) {
@@ -468,7 +483,10 @@ public class RecordPage implements PageDrawer {
 
     private void clearForm() {
         dateField.setText(HINT_DATE); dateField.setForeground(Color.GRAY);
-        timeField.setText(HINT_TIME); timeField.setForeground(Color.GRAY);
+        // --- MODIFICATION START ---
+        timeField.setText(timeFormatter.format(new Date())); // 清除时自动填充当前时间
+        timeField.setForeground(Color.BLACK); // 颜色设为黑色
+        // --- MODIFICATION END ---
         amountField.setText(HINT_AMOUNT); amountField.setForeground(Color.GRAY);
         remarkField.setText(HINT_REMARK); remarkField.setForeground(Color.GRAY);
         for (int i = 0; i < typeCombo.getItemCount(); i++) {

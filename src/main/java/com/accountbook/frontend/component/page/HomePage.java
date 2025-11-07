@@ -169,12 +169,12 @@ public class HomePage implements PageDrawer, Refreshable {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("账单列表"));
         panel.setBackground(Color.WHITE);
-
+    
         JPanel headerPanel = new JPanel(new GridLayout(1, 6));
         headerPanel.setPreferredSize(new Dimension(0, 40));
         headerPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         headerPanel.setBackground(Color.WHITE);
-
+    
         String[] headers = {"时间", "支出/收入", "类型", "金额/元", "备注", "操作"};
         for (String header : headers) {
             JLabel label = new JLabel(header, SwingConstants.CENTER);
@@ -185,11 +185,12 @@ public class HomePage implements PageDrawer, Refreshable {
             headerPanel.add(label);
         }
         panel.add(headerPanel, BorderLayout.NORTH);
-
+    
+        // 原来的列表面板：纵向从上往下添加
         JPanel listPanel = new JPanel();
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
         listPanel.setBackground(Color.WHITE);
-
+    
         if (billMap.isEmpty()) {
             JLabel emptyLabel = new JLabel("暂无账单数据，请添加账单", SwingConstants.CENTER);
             emptyLabel.setPreferredSize(new Dimension(0, 200));
@@ -202,7 +203,7 @@ public class HomePage implements PageDrawer, Refreshable {
                     .sorted((b1, b2) -> {
                         LocalDateTime t1 = LocalDateTime.parse(b1.getBillTime(), formatter);
                         LocalDateTime t2 = LocalDateTime.parse(b2.getBillTime(), formatter);
-                        return t2.compareTo(t1);
+                        return t2.compareTo(t1); // 保持“新到旧”顺序：从上往下展示
                     })
                     .forEach(bill -> {
                         JPanel rowPanel = createBillRow(bill);
@@ -210,13 +211,25 @@ public class HomePage implements PageDrawer, Refreshable {
                         listPanel.add(Box.createVerticalStrut(2));
                     });
         }
-
-        JScrollPane scrollPane = new JScrollPane(listPanel);
+    
+        // 关键：用一个 PAGE_START 包装，保证内容总是贴顶显示（即使不足一屏/只有一条）
+        JPanel listWrapper = new JPanel(new BorderLayout());
+        listWrapper.setBackground(Color.WHITE);
+        listWrapper.add(listPanel, BorderLayout.PAGE_START);
+    
+        JScrollPane scrollPane = new JScrollPane(listWrapper);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setBorder(null);
+    
+        // 初始/刷新时强制视图从顶部开始
+        SwingUtilities.invokeLater(() -> {
+            scrollPane.getVerticalScrollBar().setValue(0);
+            // 也可显式设置视口位置为左上角，双保险：
+            scrollPane.getViewport().setViewPosition(new Point(0, 0));
+        });
+    
         panel.add(scrollPane, BorderLayout.CENTER);
-
         return panel;
     }
 
