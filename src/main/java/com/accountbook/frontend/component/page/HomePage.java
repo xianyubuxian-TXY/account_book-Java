@@ -17,6 +17,7 @@ import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -27,6 +28,9 @@ public class HomePage implements PageDrawer, Refreshable {
     private final DecimalFormat decimalFormat = new DecimalFormat("0.00");
     private int currentFontSize = 12;
     private JPanel currentContentPanel;
+
+    /** 用于标记当前中间面板显示的是哪个页面 */
+    private static final String PAGE_KEY = "currentPage";
 
     private HomePage(MainPage mainPage) {
         this.mainPage = mainPage;
@@ -47,6 +51,10 @@ public class HomePage implements PageDrawer, Refreshable {
     @Override
     public void draw(JPanel contentPanel) {
         this.currentContentPanel = contentPanel;
+
+        // 标记当前显示的是首页
+        contentPanel.putClientProperty(PAGE_KEY, "HOME");
+
         contentPanel.removeAll();
         contentPanel.setLayout(new BorderLayout(0, 20));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
@@ -69,8 +77,11 @@ public class HomePage implements PageDrawer, Refreshable {
         BigDecimal remainingBudget = budget.subtract(totalExpense);
         BigDecimal netIncome = totalIncome.subtract(totalExpense);
 
+        // --- 核心修改在这里 ---
+        String currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+
         JPanel statsPanel = createStatsPanel(
-                "2025-10", budget, totalExpense, remainingBudget, totalIncome, netIncome
+                currentMonth, budget, totalExpense, remainingBudget, totalIncome, netIncome
         );
         contentPanel.add(statsPanel, BorderLayout.NORTH);
 
@@ -90,9 +101,21 @@ public class HomePage implements PageDrawer, Refreshable {
         contentPanel.repaint();
     }
 
+    /**
+     * 只在“当前中间面板仍然标记为 HOME”时才刷新，
+     * 避免在录入页等操作后把页面强行切回首页。
+     */
     @Override
     public void refresh() {
-        if (currentContentPanel != null) draw(currentContentPanel);
+        if (currentContentPanel == null) {
+            return;
+        }
+        Object flag = currentContentPanel.getClientProperty(PAGE_KEY);
+        if (!"HOME".equals(flag)) {
+            // 当前展示的不是首页，跳过刷新，避免“自动跳回首页”
+            return;
+        }
+        draw(currentContentPanel);
     }
 
     private void adjustFontSize(int width) {
@@ -151,6 +174,7 @@ public class HomePage implements PageDrawer, Refreshable {
         headerPanel.setPreferredSize(new Dimension(0, 40));
         headerPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         headerPanel.setBackground(Color.WHITE);
+
         String[] headers = {"时间", "支出/收入", "类型", "金额/元", "备注", "操作"};
         for (String header : headers) {
             JLabel label = new JLabel(header, SwingConstants.CENTER);
@@ -192,6 +216,7 @@ public class HomePage implements PageDrawer, Refreshable {
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setBorder(null);
         panel.add(scrollPane, BorderLayout.CENTER);
+
         return panel;
     }
 
@@ -203,6 +228,7 @@ public class HomePage implements PageDrawer, Refreshable {
 
         JLabel timeLabel = new JLabel(bill.getBillTime(), SwingConstants.CENTER);
         timeLabel.setFont(new Font("微软雅黑", Font.PLAIN, currentFontSize));
+        timeLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         rowPanel.add(timeLabel);
 
         String typeText = bill.getType() == -1 ? "支出" : "收入";
@@ -210,9 +236,10 @@ public class HomePage implements PageDrawer, Refreshable {
         JLabel typeLabel = new JLabel(typeText, SwingConstants.CENTER);
         typeLabel.setForeground(typeColor);
         typeLabel.setFont(new Font("微软雅黑", Font.PLAIN, currentFontSize));
+        typeLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         rowPanel.add(typeLabel);
 
-        // --- 改造：类型列并排显示 大类「具体类型」 ---
+        // 类型：大类「具体类型」
         String categoryName = "未知类型";
         CategorySingleResponse category = mainPage.getCategoryMap().get(bill.getCategoryId());
         if (category != null) categoryName = category.getName();
@@ -230,17 +257,20 @@ public class HomePage implements PageDrawer, Refreshable {
 
         JLabel amountLabel = new JLabel(decimalFormat.format(bill.getAmount()) + " 元", SwingConstants.CENTER);
         amountLabel.setFont(new Font("微软雅黑", Font.PLAIN, currentFontSize));
+        amountLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         rowPanel.add(amountLabel);
 
         String remark = bill.getRemark() != null ? bill.getRemark() : "无";
         JLabel remarkLabel = new JLabel(remark, SwingConstants.CENTER);
         remarkLabel.setFont(new Font("微软雅黑", Font.PLAIN, currentFontSize));
         remarkLabel.setToolTipText(remark);
+        remarkLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         rowPanel.add(remarkLabel);
 
         JPanel actionPanel = new JPanel();
         actionPanel.setLayout(new BoxLayout(actionPanel, BoxLayout.X_AXIS));
         actionPanel.setBackground(Color.WHITE);
+        actionPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 
         JButton detailBtn = new JButton("详情");
         styleActionButton(detailBtn, Color.BLUE, currentFontSize + 1);
@@ -259,7 +289,9 @@ public class HomePage implements PageDrawer, Refreshable {
         deleteBtn.addActionListener(e -> deleteBill(bill, rowPanel));
         actionPanel.add(deleteBtn);
 
+        actionPanel.add(Box.createHorizontalGlue());
         rowPanel.add(actionPanel);
+
         return rowPanel;
     }
 
@@ -285,8 +317,12 @@ public class HomePage implements PageDrawer, Refreshable {
         textArea.setFont(new Font("微软雅黑", Font.PLAIN, 14));
         JScrollPane scrollPane = new JScrollPane(textArea);
         scrollPane.setPreferredSize(new Dimension(400, 300));
-        JOptionPane.showMessageDialog(null, scrollPane,
-                "账单详情（ID：" + bill.getBillId() + "）", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(
+                null,
+                scrollPane,
+                "账单详情（ID：" + bill.getBillId() + "）",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     private void showEditDialog(BillSingleResponse bill) {
@@ -295,14 +331,23 @@ public class HomePage implements PageDrawer, Refreshable {
     }
 
     private void deleteBill(BillSingleResponse bill, JPanel rowPanel) {
-        int confirm = JOptionPane.showConfirmDialog(null,
+        int confirm = JOptionPane.showConfirmDialog(
+                null,
                 "确定要删除账单 ID：" + bill.getBillId() + " 吗？",
-                "确认删除", JOptionPane.YES_NO_OPTION);
+                "确认删除",
+                JOptionPane.YES_NO_OPTION
+        );
         if (confirm != JOptionPane.YES_OPTION) return;
+
         try {
             mainPage.getBillHelper().deleteBill(bill.getBillId());
             mainPage.deleteBill(bill.getBillId());
-            if (currentContentPanel != null) draw(currentContentPanel);
+
+            if (currentContentPanel != null) {
+                // 这里会再次触发 draw，但前提是当前页标记仍为 HOME
+                draw(currentContentPanel);
+            }
+
             JOptionPane.showMessageDialog(null, "删除成功！");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "删除失败：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
