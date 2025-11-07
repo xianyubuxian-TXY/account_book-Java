@@ -18,6 +18,9 @@ import java.util.List;
  */
 public class CategoryRequestHelper extends BaseRequestHelper {
 
+    /** 系统默认分类/具体类型固定ID，请与后端保持一致 */
+    private static final int SYSTEM_DEFAULT_ID = 1;
+
     /**
      * 新增分类：返回新增的分类详情
      * 业务规则：分类名称不可重复，且长度限制在1-20字符
@@ -27,11 +30,11 @@ public class CategoryRequestHelper extends BaseRequestHelper {
         validateParamNotNull(name, "分类名称不能为空");
         String trimmedName = name.trim();
         validateParamTrue(!trimmedName.isEmpty(), "分类名称不能为空白字符");
-        
+
         // 格式与业务规则校验
-        validateParamTrue(trimmedName.length() <= 20, 
+        validateParamTrue(trimmedName.length() <= 20,
                 "分类名称过长（最大20字符，当前：" + trimmedName.length() + "）");
-        
+
         // 唯一性校验：避免重复添加同名分类
         CategoryListResponse existing = searchCategory(trimmedName);
         if (existing.getItems() != null && !existing.getItems().isEmpty()) {
@@ -51,22 +54,22 @@ public class CategoryRequestHelper extends BaseRequestHelper {
         // 基础标识校验
         validateParamNotNull(categoryId, "分类ID不能为空");
         validateParamTrue(categoryId > 0, "分类ID必须为正整数（当前值：" + categoryId + "）");
-        
+
         // 校验：至少修改一个有效字段
         boolean hasValidUpdate = (newName != null) && !newName.trim().isEmpty();
         validateParamTrue(hasValidUpdate, "新分类名称不能为空或空白字符");
-        
+
         // 新名称格式校验
         String trimmedNewName = newName.trim();
-        validateParamTrue(trimmedNewName.length() <= 20, 
+        validateParamTrue(trimmedNewName.length() <= 20,
                 "新分类名称过长（最大20字符，当前：" + trimmedNewName.length() + "）");
-        
+
         // 校验：新名称与原名称是否一致（避免无效修改）
         CategorySingleResponse original = searchCategoryById(categoryId);
         if (trimmedNewName.equals(original.getName())) {
             throw new RuntimeException("新名称与原名称一致，无需修改");
         }
-        
+
         // 校验：新名称是否已被其他分类使用
         CategoryListResponse existing = searchCategory(trimmedNewName);
         if (existing.getItems() != null) {
@@ -86,23 +89,29 @@ public class CategoryRequestHelper extends BaseRequestHelper {
     /**
      * 删除分类：返回被删除的分类ID信息
      * 业务规则：系统默认分类（ID=1）不可删除；存在关联数据时需先处理
+     *
+     * 说明：
+     *  - 仍然使用原有的 DELETE_CATEGORY 请求类型，避免影响既有功能；
+     *  - 在发送前增加了存在性校验与系统默认ID保护，错误信息更友好；
+     *  - 实际的“迁移关联数据再删除”的事务逻辑由后端实现（参考你已按 DAO 改好的服务层）。
      */
     public CategoryDeleteResponse deleteCategory(Integer categoryId) {
         // 基础标识校验
         validateParamNotNull(categoryId, "分类ID不能为空");
         validateParamTrue(categoryId > 0, "分类ID必须为正整数（当前值：" + categoryId + "）");
-        
+
         // 系统保护：默认分类不可删除
-        if (categoryId == 1) {
-            throw new RuntimeException("系统默认分类（ID=1）不可删除");
+        if (categoryId == SYSTEM_DEFAULT_ID) {
+            throw new RuntimeException("系统默认分类（ID=" + SYSTEM_DEFAULT_ID + "）不可删除");
         }
 
-        // TODO：实际业务中需添加关联校验（示例）
-        // 1. 检查是否有关联的具体类型
-        // 2. 检查是否有关联的账单
-        // 若存在关联数据，需提示："该分类存在XX条关联数据，请先迁移或删除关联数据"
+        // 存在性校验：若不存在则直接报错（可避免误删提示不清）
+        CategorySingleResponse target = searchCategoryById(categoryId);
+        if (target == null) {
+            throw new RuntimeException("未找到ID为" + categoryId + "的分类，无法删除");
+        }
 
-        // 发送删除请求
+        // 发送删除请求（后端负责：迁移关联 -> 删除；失败会返回错误信息）
         CategoryDeleteParams params = new CategoryDeleteParams(categoryId);
         FrontendRequest<CategoryDeleteParams> request = new FrontendRequest<>(RequestType.DELETE_CATEGORY, params);
         return parseResponse(sendRequest(request));
