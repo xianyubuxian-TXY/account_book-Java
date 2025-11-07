@@ -32,4 +32,13 @@ public interface BillDAO {
      * @return 影响行数
      */
     int updateBillById(Integer billId, Map<String, Object> fieldMap);
+
+    /**
+     * 查询所有账单（包含全部字段），按时间由近到远排序（最新的在前）
+     * @return 所有账单的实体列表（按bill_time DESC排序）
+     */
+    List<Bill> queryAllBillsOrderByTimeDesc();
+
+    // 按条件更新符合条件的账单
+    int updateBillsByCondition(Map<String, Object> queryMap, Map<String, Object> updateMap);
 }

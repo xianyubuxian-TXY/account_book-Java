@@ -2,45 +2,53 @@ package com.accountbook.backend.storage.entity;
 
 import java.math.BigDecimal;
 
-// 预算实体
+/**
+ * 预算实体类：与数据库表字段完全对齐
+ */
 public class Budget {
-    // 不可变字段（初始化后不修改）
-    private final String month;
-    private final String category;
-    private final BigDecimal monthlyBudget;
+    private Integer id;          // 主键自增
+    private Integer categoryId;  // 分类ID（非空）
+    private String month;        // 月份（YYYY-MM，非空）
+    private BigDecimal totalBudget; // 总预算（非空）
+    private BigDecimal spent;    // 已支出（默认0.00）
+    private BigDecimal remaining; // 剩余预算（非空）
 
-    // 可变字段（可动态更新）
-    private BigDecimal actualSpend;
-    private BigDecimal remainingBudget;
+    public Budget() {}
 
-    // 前端初始化：仅接收前端传递的字段
-    public Budget(String month, String category, BigDecimal monthlyBudget) {
+    /**
+     * 前端初始化用构造方法：仅需传入月份、分类ID、总预算，已支出默认0，剩余预算自动计算
+     */
+    public Budget(String month, Integer categoryId, BigDecimal totalBudget) {
         this.month = month;
-        this.category = category;
-        this.monthlyBudget = monthlyBudget;
-        this.actualSpend = BigDecimal.ZERO;
-        this.remainingBudget = monthlyBudget;
+        this.categoryId = categoryId;
+        this.totalBudget = totalBudget;
+        this.spent = BigDecimal.ZERO;
+        this.remaining = totalBudget.subtract(this.spent);
     }
 
-    // 后端初始化：接收数据库查询的完整字段
-    public Budget(String month, String category, BigDecimal monthlyBudget,
-                 BigDecimal actualSpend, BigDecimal remainingBudget) {
+    /**
+     * 后端初始化用构造方法：接收所有字段（含主键ID）
+     */
+    public Budget(Integer id, String month, Integer categoryId, BigDecimal totalBudget, BigDecimal spent, BigDecimal remaining) {
+        this.id = id;
         this.month = month;
-        this.category = category;
-        this.monthlyBudget = monthlyBudget;
-        this.actualSpend = actualSpend;
-        this.remainingBudget = remainingBudget;
+        this.categoryId = categoryId;
+        this.totalBudget = totalBudget;
+        this.spent = spent;
+        this.remaining = remaining;
     }
 
-    // 不可变字段的getter（无setter）
+    // Getter + Setter
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public Integer getCategoryId() { return categoryId; }
+    public void setCategoryId(Integer categoryId) { this.categoryId = categoryId; }
     public String getMonth() { return month; }
-    public String getCategory() { return category; }
-    public BigDecimal getMonthlyBudget() { return monthlyBudget; }
-
-    // 可变字段的getter和setter
-    public BigDecimal getActualSpend() { return actualSpend; }
-    public void setActualSpend(BigDecimal actualSpend) { this.actualSpend = actualSpend; }
-
-    public BigDecimal getRemainingBudget() { return remainingBudget; }
-    public void setRemainingBudget(BigDecimal remainingBudget) { this.remainingBudget = remainingBudget; }
+    public void setMonth(String month) { this.month = month; }
+    public BigDecimal getTotalBudget() { return totalBudget; }
+    public void setTotalBudget(BigDecimal totalBudget) { this.totalBudget = totalBudget; }
+    public BigDecimal getSpent() { return spent; }
+    public void setSpent(BigDecimal spent) { this.spent = spent; }
+    public BigDecimal getRemaining() { return remaining; }
+    public void setRemaining(BigDecimal remaining) { this.remaining = remaining; }
 }

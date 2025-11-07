@@ -10,6 +10,7 @@ import com.accountbook.proxy.ServiceProxy;
 public abstract class BaseRequestHelper {
     protected ServiceProxy serviceProxy;
 
+    /*注入ServiceProxy */
     public void init(ServiceProxy proxy) {
         if (proxy == null) {
             throw new IllegalArgumentException("ServiceProxy 不能为空，初始化失败");
@@ -17,7 +18,6 @@ public abstract class BaseRequestHelper {
         this.serviceProxy = proxy;
     }
 
-    @SuppressWarnings("unchecked")
     protected <T, R> BackendResponse<R> sendRequest(FrontendRequest<T> request) {
         if (serviceProxy == null) {
             throw new IllegalStateException("Helper 未初始化！请先调用 init 方法");

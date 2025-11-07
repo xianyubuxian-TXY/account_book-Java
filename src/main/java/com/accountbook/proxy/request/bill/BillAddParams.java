@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.accountbook.backend.common.util.TimeUtils;
-
 public class BillAddParams {
     private String time;
     private Integer type;
@@ -21,7 +19,7 @@ public class BillAddParams {
     // 构造方法
     public BillAddParams(String billTime, Integer type, Integer categoryId,
                         Integer specificTypeId, BigDecimal amount, String remark) {
-        this.time = billTime+" "+TimeUtils.getInstance().getCurrentTimeHHmm();
+        this.time = billTime;
         this.type = type;
         this.categoryId = categoryId;
         this.specificTypeId = specificTypeId;

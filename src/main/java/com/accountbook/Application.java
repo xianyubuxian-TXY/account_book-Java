@@ -1,19 +1,21 @@
 package com.accountbook;
 
+import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.net.Authenticator.RequestorType;
+
+import javax.swing.SwingUtilities;
 
 import com.accountbook.backend.factory.AccountBookServiceFactory;
 import com.accountbook.backend.factory.BusinessFactory;
 import com.accountbook.backend.storage.db.DBInitializer;
 import com.accountbook.backend.storage.entity.Bill;
-import com.accountbook.frontend.PageComponent;
-import com.accountbook.frontend.UIFactory;
-import com.accountbook.frontend.factory.AccountBookBusinessUIFactory;
+import com.accountbook.frontend.component.page.HomePage;
 import com.accountbook.proxy.BackendResponse;
 import com.accountbook.proxy.FrontendRequest;
 import com.accountbook.proxy.ServiceProxy;
 import com.accountbook.proxy.FrontendRequest.RequestType;
+import com.accountbook.proxy.common.ProxyHandler;
 import com.accountbook.proxy.request.bill.BillAddParams;
 import com.accountbook.proxy.request.bill.BillChangeParams;
 import com.accountbook.proxy.request.bill.BillDeleteParams;
@@ -30,29 +32,26 @@ public class Application {
         DBInitializer.init();
 
         /*2.初始化后端工厂与代理*/
-        BusinessFactory businessFactory=new AccountBookServiceFactory();
-        ServiceProxy serviceProxy=new ServiceProxy(businessFactory);
+        ProxyHandler.init();
 
-        /*3.初始化前端UI*/
-        UIFactory uiFactory=new AccountBookBusinessUIFactory();
-        PageComponent homePage=uiFactory.createHomePage();
-        homePage.initLayout(serviceProxy);
-        homePage.render();
-
-        /*4.模拟前端请求 */
+        ServiceProxy serviceProxy=ProxyHandler.getAccountBookServiceProxy();
+        /*3.模拟前端请求 */
         //(1)增加账单
-        // AddBillParams params=new AddBillParams("2025-10-19",-1,1,1,BigDecimal.valueOf(300.0),"买了件羽绒服朋友");
-        // FrontendRequest<AddBillParams> addBillRequest=new FrontendRequest<AddBillParams>(RequestType.ADD_BILL,params);
-        // BackendResponse<BillSingleResponse> backendResponse=serviceProxy.handleRequest(addBillRequest);
-        // backendResponse.getData().printSelf();
-        // if(backendResponse.isSuccess())
-        // {
-        //     backendResponse.getData().printSelf();
-        // }
-        // else
-        // {
-        //     System.err.println(backendResponse.getMessage());
-        // }
+        BillAddParams params=new BillAddParams("2025-10-21",1,1,1,BigDecimal.valueOf(300.0),"买了件羽绒服朋友");
+        FrontendRequest<BillAddParams> addBillRequest=new FrontendRequest<BillAddParams>(RequestType.ADD_BILL,params);
+        for(int i=0;i<10;++i)
+        {
+            BackendResponse<BillSingleResponse> backendResponse=serviceProxy.handleRequest(addBillRequest);
+            backendResponse.getData().printSelf();
+            if(backendResponse.isSuccess())
+            {
+                backendResponse.getData().printSelf();
+            }
+            else
+            {
+                System.err.println(backendResponse.getMessage());
+            }
+        }
 
         //(2)搜索账单
         // SearchBillParams params=new SearchBillParams("2025-10-19", null, null, null, null, null);
@@ -81,17 +80,17 @@ public class Application {
         // }
 
         //(4)修改账单
-        BillChangeParams params=new BillChangeParams(3,"2025-10-20",1,1,1,BigDecimal.valueOf(500.0),"搬砖");
-        FrontendRequest<BillChangeParams> changeRequest=new FrontendRequest<BillChangeParams>(RequestType.CHANGE_BILL,params);
-        BackendResponse<BillSingleResponse> backendResponse=serviceProxy.handleRequest(changeRequest);
-        if(backendResponse.isSuccess())
-        {
-            System.out.println(backendResponse.getMessage());
-            backendResponse.getData().printSelf();
-        }
-        else
-        {
-            System.out.println(backendResponse.getMessage());
-        }
+        // BillChangeParams params=new BillChangeParams(3,"2025-10-20",1,1,1,BigDecimal.valueOf(500.0),"搬砖");
+        // FrontendRequest<BillChangeParams> changeRequest=new FrontendRequest<BillChangeParams>(RequestType.CHANGE_BILL,params);
+        // BackendResponse<BillSingleResponse> backendResponse=serviceProxy.handleRequest(changeRequest);
+        // if(backendResponse.isSuccess())
+        // {
+        //     System.out.println(backendResponse.getMessage());
+        //     backendResponse.getData().printSelf();
+        // }
+        // else
+        // {
+        //     System.out.println(backendResponse.getMessage());
+        // }
     }
 }

@@ -28,7 +28,7 @@ public class Bill {
         {
             this.time=TimeUtils.getInstance().getCurrentTime();
         }
-        else this.time = time + " " + TimeUtils.getInstance().getCurrentTimeHHmm();
+        else this.time = time;
         this.type = type;
         this.categoryId = categoryId;
         this.specificTypeId = specificTypeId;

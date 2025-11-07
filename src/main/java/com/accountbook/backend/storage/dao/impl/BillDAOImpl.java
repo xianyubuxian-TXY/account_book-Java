@@ -1,11 +1,13 @@
 package com.accountbook.backend.storage.dao.impl;
 
-import com.accountbook.backend.common.exception.BillBusinessException;
+import com.accountbook.backend.common.exception.BusinessServiceException;
 import com.accountbook.backend.common.util.BillConvertUtils;
+import com.accountbook.backend.common.util.NameConvertUtils;
 import com.accountbook.backend.storage.dao.BaseDAO;
 import com.accountbook.backend.storage.dao.BillDAO;
 import com.accountbook.backend.storage.entity.Bill;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -116,18 +118,18 @@ public class BillDAOImpl extends BaseDAO implements BillDAO{
 
             // 3. 处理查询结果（无数据则抛异常）
             if (mapList == null || mapList.isEmpty()) {
-                throw new BillBusinessException("查询失败：未找到ID为" + billId + "的账单");
+                throw new BusinessServiceException("查询失败：未找到ID为" + billId + "的账单");
             }
 
             // 4. 转换Map为Bill实体（复用转换工具类）
             return BillConvertUtils.mapToBill(mapList.get(0));
 
-        } catch (BillBusinessException e) {
+        } catch (BusinessServiceException e) {
             // 业务异常直接抛出（已包含明确信息）
             throw e;
         } catch (Exception e) {
             // 其他异常（如SQL异常）包装为业务异常
-            throw new BillBusinessException("查询ID为" + billId + "的账单时发生系统异常：" + e.getMessage());
+            throw new BusinessServiceException("查询ID为" + billId + "的账单时发生系统异常：" + e.getMessage());
         }
     }
 
@@ -175,15 +177,103 @@ public class BillDAOImpl extends BaseDAO implements BillDAO{
         }
     }
 
+        /**
+     * 实现：查询所有账单（全字段），按时间由近到远排序
+     */
+    @Override
+    public List<Bill> queryAllBillsOrderByTimeDesc() {
+        try {
+            // 1. 构建SQL：查询所有字段，按bill_time（账单时间）倒序（DESC）
+            String sql = "SELECT * FROM " + TABLE_BILL + " ORDER BY bill_time DESC";
+
+            // 2. 执行查询（调用父类自定义SQL查询方法）
+            List<Map<String, Object>> mapList = super.queryByCustomSql(sql);
+
+            // 3. 转换为Bill实体列表（空结果返回空列表，避免null）
+            List<Bill> billList = new ArrayList<>();
+            if (mapList != null && !mapList.isEmpty()) {
+                for (Map<String, Object> map : mapList) {
+                    billList.add(BillConvertUtils.mapToBill(map));
+                }
+            }
+
+            return billList;
+
+        } catch (Exception e) {
+            // 统一包装为业务异常，携带具体错误信息
+            throw new BusinessServiceException("查询所有账单（按时间倒序）失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 按条件批量更新账单（实现接口方法）
+     * @param queryMap 筛选条件（key：Java属性名，如"categoryId"；value：对应值）
+     * @param updateMap 要更新的字段（key：Java属性名，如"categoryId"；value：新值）
+     * @return 受影响的行数（-1=失败，0=无匹配数据，≥1=成功更新的行数）
+     */
+    @Override
+    public int updateBillsByCondition(Map<String, Object> queryMap, Map<String, Object> updateMap) {
+        // 1. 校验更新字段非空（避免无效更新）
+        if (updateMap == null || updateMap.isEmpty()) {
+            System.err.println("批量更新失败：至少需要一个待更新的字段");
+            return -1;
+        }
+
+        try {
+            // 2. 转换updateMap：Java属性名 → 数据库字段名（生成fieldMap）
+            Map<String, Object> fieldMap = convertToDbFieldMap(updateMap);
+
+            // 3. 处理queryMap：生成WHERE条件和参数
+            String condition = "";
+            List<Object> params = new ArrayList<>();
+            if (queryMap != null && !queryMap.isEmpty()) {
+                // 3.1 转换查询条件的Java属性名为数据库字段名
+                List<String> conditionFragments = new ArrayList<>();
+                for (Map.Entry<String, Object> entry : queryMap.entrySet()) {
+                    String dbField = NameConvertUtils.camelToUnderline(entry.getKey());
+                    conditionFragments.add(dbField + " = ?"); // 生成"field = ?"片段
+                    params.add(entry.getValue()); // 收集条件参数值
+                }
+                // 3.2 拼接条件（如"category_id = ? AND specific_type_id = ?"）
+                condition = String.join(" AND ", conditionFragments);
+            }
+
+            // 4. 调用父类update方法执行更新（复用BaseDAO的更新逻辑）
+            // 注意：BaseDAO的update方法参数为（表名，更新字段，条件，条件参数）
+            return super.update(TABLE_BILL, fieldMap, condition, params.toArray());
+
+        } catch (Exception e) {
+            System.err.println("批量更新账单失败：" + e.getMessage());
+            return -1; // 异常时返回-1标识失败
+        }
+    }
+
     /**
      * 辅助方法：校验账单ID合法性（原BillByIdQueryUtils的校验逻辑）
      */
     private void validateBillId(Integer billId) {
         if (billId == null) {
-            throw new BillBusinessException("账单ID不能为空");
+            throw new BusinessServiceException("账单ID不能为空");
         }
         if (billId <= 0) {
-            throw new BillBusinessException("账单ID必须为正整数（当前值：" + billId + "）");
+            throw new BusinessServiceException("账单ID必须为正整数（当前值：" + billId + "）");
         }
+    }
+
+        /**
+     * 辅助方法：将Java属性名的Map转换为数据库字段名的Map
+     * （如{categoryId:1} → {category_id:1}）
+     */
+    private Map<String, Object> convertToDbFieldMap(Map<String, Object> javaPropMap) {
+        if (javaPropMap == null) {
+            return null;
+        }
+        // 遍历Map，转换key为数据库字段名
+        Map<String, Object> dbFieldMap = new java.util.HashMap<>();
+        for (Map.Entry<String, Object> entry : javaPropMap.entrySet()) {
+            String dbField = NameConvertUtils.camelToUnderline(entry.getKey());
+            dbFieldMap.put(dbField, entry.getValue());
+        }
+        return dbFieldMap;
     }
 }

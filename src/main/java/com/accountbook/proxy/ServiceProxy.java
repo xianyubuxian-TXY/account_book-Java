@@ -1,6 +1,6 @@
 package com.accountbook.proxy;
 
-import com.accountbook.backend.common.exception.BillBusinessException;
+import com.accountbook.backend.common.exception.BusinessServiceException;
 import com.accountbook.backend.factory.BusinessFactory;
 import com.accountbook.backend.service.BusinessService;
 import com.accountbook.proxy.request.bill.BillDeleteParams;
@@ -46,7 +46,7 @@ public class ServiceProxy {
         } catch (NullPointerException e) {
             // 6. 处理空指针异常
             return BackendResponse.fail("关键参数为空：" + e.getMessage());
-        } catch (BillBusinessException e) {
+        } catch (BusinessServiceException e) {
             // 7. 处理账单业务异常
             return BackendResponse.fail(e.getMessage());
         } catch (Exception e) {
@@ -63,13 +63,24 @@ public class ServiceProxy {
      * 根据请求类型获取对应的泛型业务服务
      */
     @SuppressWarnings("unchecked")
-    private <T, R> BusinessService<T, R> getBusinessService(FrontendRequest.RequestType requestType) {
+    private <T, R> BusinessService<T, R>getBusinessService (FrontendRequest.RequestType requestType) {
         return switch (requestType) {
             case ADD_BILL -> (BusinessService<T, R>) businessFactory.createAddBillService();
             case DELETE_BILL -> (BusinessService<T, R>) businessFactory.createDeleteBillService();
             case CHANGE_BILL -> (BusinessService<T, R>) businessFactory.createChangeBillService();
             case SEARCH_BILL -> (BusinessService<T, R>) businessFactory.createSearchBillService();
             case STATISTIC_BILL -> (BusinessService<T, R>) businessFactory.createStatisticBillService();
+
+            case ADD_CATEGORY -> (BusinessService<T,R>) businessFactory.createAddCategoryService();
+            case DELETE_CATEGORY -> (BusinessService<T,R>) businessFactory.createDeleteCategoryService();
+            case CHANGE_CATEGORY -> (BusinessService<T,R>) businessFactory.createChangeCategoryService();
+            case SEARCH_CATEGORY -> (BusinessService<T,R>) businessFactory.createSearchCategoryService();
+
+            case ADD_SPECIFIC_TYPE -> (BusinessService<T,R>) businessFactory.createAddSpecificTypeService();
+            case DELETE_SPECIFIC_TYPE -> (BusinessService<T,R>) businessFactory.createDeleteSpecificTypeService();
+            case CHANGE_SPECIFIC_TYPE -> (BusinessService<T,R>) businessFactory.createChangeSpecificTypeService();
+            case SEARCH_SPECIFIC_TYPE -> (BusinessService<T,R>) businessFactory.createSearchSpecificTypeService();
+
             case ADD_BUDGET -> (BusinessService<T, R>) businessFactory.createAddBudgetService();
             case DELETE_BUDGET -> (BusinessService<T, R>) businessFactory.createDeleteBudgetService();
             case CHANGE_BUDGET -> (BusinessService<T, R>) businessFactory.createChangeBudgetService();

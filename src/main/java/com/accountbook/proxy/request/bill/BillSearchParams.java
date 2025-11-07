@@ -6,13 +6,17 @@ import java.util.Map;
 
 // 注：移除TimeUtils依赖（不再需要拼接时分）
 public class BillSearchParams {
+    //账单ID（用于精确查询单条账单）
+    private Integer Id;
+
+    
     // 1. 原有单值查询字段（时间字段仅存“YYYY-MM-DD”格式）
     private String time;                // 单值日期（如“2025-10-23”，无时分）
     private Integer type;               // 收支类型（-1=支出，1=收入）
     private Integer categoryId;         // 大类ID
     private Integer specificTypeId;     // 具体类型ID
     private BigDecimal amount;          // 单值金额（如100.00）
-    private String key;                 // 备注关键词
+    private String remark;                 // 备注关键词
 
     // 2. 新增范围查询字段（时间范围同样仅“YYYY-MM-DD”格式）
     private String timeStart;           // 日期范围起始（如“2025-10-01”）
@@ -20,9 +24,8 @@ public class BillSearchParams {
     private BigDecimal amountMin;       // 金额范围最小值（如50.00）
     private BigDecimal amountMax;       // 金额范围最大值（如200.00）
 
-    //默认构造函数：其他字段通过Setter动态设置（支持部分修改）
-    public BillSearchParams()
-    {}
+    // 默认构造函数：其他字段通过Setter动态设置（支持部分修改）
+    public BillSearchParams() {}
 
     // 3. 原有构造方法（修改：移除时分拼接，时间仅接收“YYYY-MM-DD”）
     public BillSearchParams(String billDate, Integer type, Integer categoryId,
@@ -32,7 +35,7 @@ public class BillSearchParams {
         this.categoryId = categoryId;
         this.specificTypeId = specificTypeId;
         this.amount = amount;
-        this.key = remark;
+        this.remark = remark;
     }
 
     // 4. 范围查询构造方法（时间参数仅“YYYY-MM-DD”，无时分）
@@ -57,7 +60,12 @@ public class BillSearchParams {
         this.specificTypeId = specificTypeId;
         this.amountMin = amountMin;
         this.amountMax = amountMax;
-        this.key = remark;
+        this.remark = remark;
+    }
+
+    // 新增：按ID查询的构造方法（专门用于单ID精确查询）
+    public BillSearchParams(Integer Id) {
+        this.Id = Id;
     }
 
     // 5. Getter/Setter（时间字段注释明确格式，避免误用）
@@ -75,8 +83,8 @@ public class BillSearchParams {
     public void setSpecificTypeId(Integer specificTypeId) { this.specificTypeId = specificTypeId; }
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
-    public String getKey() { return key; }
-    public void setKey(String key) { this.key = key; }
+    public String getRemark() { return remark; }
+    public void setRemark(String key) { this.remark = key; }
 
     // 新增范围字段 Getter/Setter（时间字段明确格式）
     public String getTimeStart() { return timeStart; }
@@ -94,11 +102,19 @@ public class BillSearchParams {
     public BigDecimal getAmountMax() { return amountMax; }
     public void setAmountMax(BigDecimal amountMax) { this.amountMax = amountMax; }
 
+    // 新增 billId 的 Getter/Setter
+    public Integer getId() { return Id; }
+    public void setId(Integer Id) { this.Id = Id; }
+
     /**
-     * 优化 toMap 方法：时间字段仅存“YYYY-MM-DD”，不包含时分
+     * 优化 toMap 方法：新增 billId 字段映射，时间字段仅存“YYYY-MM-DD”
      */
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
+        // 新增：billId 字段映射（优先处理，按ID查询时生效）
+        if (this.Id != null) {
+            map.put("id", this.Id);
+        }
         // 原有单值字段映射（时间仅“YYYY-MM-DD”）
         if (this.time != null && !this.time.trim().isEmpty()) {
             map.put("bill_date", this.time); // 键名改为bill_date，明确是日期（非完整时间）
@@ -125,7 +141,7 @@ public class BillSearchParams {
         map.put("type", this.type);
         map.put("category_id", this.categoryId);
         map.put("specific_type_id", this.specificTypeId);
-        map.put("remark", this.key);
+        map.put("remark", this.remark);
 
         return map;
     }
