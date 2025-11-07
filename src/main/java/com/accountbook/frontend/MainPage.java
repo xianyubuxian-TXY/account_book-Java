@@ -6,6 +6,7 @@ import com.accountbook.frontend.component.panel.LeftNavigationPanel;
 import com.accountbook.frontend.component.page.*;
 import com.accountbook.proxy.common.ProxyHandler;
 import com.accountbook.proxy.helper.impl.BillRequestHelper;
+import com.accountbook.proxy.helper.impl.BudgetRequestHelper;
 import com.accountbook.proxy.helper.impl.CategoryRequestHelper;
 import com.accountbook.proxy.helper.impl.SpecificTypeRequestHelper;
 import com.accountbook.proxy.response.bill.BillSingleResponse;
@@ -37,6 +38,7 @@ public class MainPage extends JFrame {
     private final CategoryRequestHelper categoryHelper;
     private final SpecificTypeRequestHelper specificTypeHelper;
     private final BillRequestHelper billHelper;
+    private final BudgetRequestHelper budgetHelper;
 
     public MainPage() {
         // 1. 初始化ProxyHandler（确保Helper可用）
@@ -46,6 +48,7 @@ public class MainPage extends JFrame {
         this.categoryHelper = ProxyHandler.getCategoryHelper();
         this.specificTypeHelper = ProxyHandler.getSpecificTypeHelper();
         this.billHelper = ProxyHandler.getBillHelper();
+        this.budgetHelper=ProxyHandler.getBudgetHelper();
 
         // 3. 先初始化UI（确保contentPanel存在）
         initUI();
@@ -242,6 +245,10 @@ public class MainPage extends JFrame {
 
     public BillRequestHelper getBillHelper() {
         return billHelper;
+    }
+
+    public BudgetRequestHelper getBudgetHelper(){
+        return budgetHelper;
     }
 
     /**

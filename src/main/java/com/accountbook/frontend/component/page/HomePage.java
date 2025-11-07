@@ -4,6 +4,11 @@ import com.accountbook.frontend.MainPage;
 import com.accountbook.frontend.component.PageDrawer;
 import com.accountbook.frontend.component.Refreshable;
 import com.accountbook.frontend.component.dialog.BillEditDialog;
+
+import com.accountbook.proxy.helper.impl.BudgetRequestHelper;
+import com.accountbook.proxy.response.budget.BudgetListResponse;
+import com.accountbook.proxy.response.budget.BudgetSingleResponse;
+
 import com.accountbook.proxy.response.bill.BillSingleResponse;
 import com.accountbook.proxy.response.category.CategorySingleResponse;
 import com.accountbook.proxy.response.specific_type.SpecificTypeSingleResponse;
@@ -67,18 +72,20 @@ public class HomePage implements PageDrawer, Refreshable {
 
         BigDecimal totalExpense = BigDecimal.ZERO;
         BigDecimal totalIncome = BigDecimal.ZERO;
-        BigDecimal budget = new BigDecimal("1500");
 
         for (BillSingleResponse bill : billMap.values()) {
             if (bill.getType() == -1) totalExpense = totalExpense.add(bill.getAmount());
             else totalIncome = totalIncome.add(bill.getAmount());
         }
 
+        // 当前年月
+        String currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+
+        // ✅ 核心改动：根据当前年月从后端查本月所有预算并求和
+        BigDecimal budget = queryCurrentMonthTotalBudget(currentMonth);
+
         BigDecimal remainingBudget = budget.subtract(totalExpense);
         BigDecimal netIncome = totalIncome.subtract(totalExpense);
-
-        // --- 核心修改在这里 ---
-        String currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
 
         JPanel statsPanel = createStatsPanel(
                 currentMonth, budget, totalExpense, remainingBudget, totalIncome, netIncome
@@ -99,6 +106,34 @@ public class HomePage implements PageDrawer, Refreshable {
 
         contentPanel.revalidate();
         contentPanel.repaint();
+    }
+
+    /**
+     * 按当前月份查询所有预算并求和
+     * month 格式必须是 yyyy-MM
+     */
+    private BigDecimal queryCurrentMonthTotalBudget(String month) {
+        try {
+            // 如你的 MainPage 提供的方法名不同，请替换为实际方法名
+            BudgetRequestHelper budgetHelper = mainPage.getBudgetHelper();
+
+            // 传 month，categoryId 传 null => 查询该月份所有分类预算
+            BudgetListResponse listResponse = budgetHelper.searchBudget(month, null);
+
+            BigDecimal sum = BigDecimal.ZERO;
+            if (listResponse != null && listResponse.getItems() != null) {
+                for (BudgetSingleResponse item : listResponse.getItems()) {
+                    if (item.getTotalBudget() != null) {
+                        sum = sum.add(item.getTotalBudget());
+                    }
+                }
+            }
+            return sum;
+        } catch (Exception e) {
+            // 不影响首页展示，失败时回退为 0
+            System.err.println("查询当月预算失败：" + e.getMessage());
+            return BigDecimal.ZERO;
+        }
     }
 
     /**
@@ -131,7 +166,7 @@ public class HomePage implements PageDrawer, Refreshable {
 
         String expenseStr = decimalFormat.format(totalExpense) + " (" +
                 (totalExpense.compareTo(BigDecimal.ZERO) == 0 ? 0 :
-                        totalExpense.divide(budget, 4, RoundingMode.HALF_UP)
+                        totalExpense.divide(budget.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ONE : budget, 4, RoundingMode.HALF_UP)
                                 .multiply(new BigDecimal("100"))).intValue() + "%)";
         String remainingStr = decimalFormat.format(remainingBudget);
         String incomeStr = decimalFormat.format(totalIncome);
@@ -169,12 +204,12 @@ public class HomePage implements PageDrawer, Refreshable {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("账单列表"));
         panel.setBackground(Color.WHITE);
-    
+
         JPanel headerPanel = new JPanel(new GridLayout(1, 6));
         headerPanel.setPreferredSize(new Dimension(0, 40));
         headerPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         headerPanel.setBackground(Color.WHITE);
-    
+
         String[] headers = {"时间", "支出/收入", "类型", "金额/元", "备注", "操作"};
         for (String header : headers) {
             JLabel label = new JLabel(header, SwingConstants.CENTER);
@@ -185,12 +220,12 @@ public class HomePage implements PageDrawer, Refreshable {
             headerPanel.add(label);
         }
         panel.add(headerPanel, BorderLayout.NORTH);
-    
+
         // 原来的列表面板：纵向从上往下添加
         JPanel listPanel = new JPanel();
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
         listPanel.setBackground(Color.WHITE);
-    
+
         if (billMap.isEmpty()) {
             JLabel emptyLabel = new JLabel("暂无账单数据，请添加账单", SwingConstants.CENTER);
             emptyLabel.setPreferredSize(new Dimension(0, 200));
@@ -211,24 +246,23 @@ public class HomePage implements PageDrawer, Refreshable {
                         listPanel.add(Box.createVerticalStrut(2));
                     });
         }
-    
+
         // 关键：用一个 PAGE_START 包装，保证内容总是贴顶显示（即使不足一屏/只有一条）
         JPanel listWrapper = new JPanel(new BorderLayout());
         listWrapper.setBackground(Color.WHITE);
         listWrapper.add(listPanel, BorderLayout.PAGE_START);
-    
+
         JScrollPane scrollPane = new JScrollPane(listWrapper);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setBorder(null);
-    
+
         // 初始/刷新时强制视图从顶部开始
         SwingUtilities.invokeLater(() -> {
             scrollPane.getVerticalScrollBar().setValue(0);
-            // 也可显式设置视口位置为左上角，双保险：
             scrollPane.getViewport().setViewPosition(new Point(0, 0));
         });
-    
+
         panel.add(scrollPane, BorderLayout.CENTER);
         return panel;
     }
