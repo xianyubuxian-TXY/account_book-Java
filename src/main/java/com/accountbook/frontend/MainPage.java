@@ -153,6 +153,29 @@ public class MainPage extends JFrame {
         }
     }
 
+    public void reloadAllData() {
+        try {
+            // 重新拉取所有数据
+            List<CategorySingleResponse> categories = categoryHelper.searchAllCategories().getItems();
+            categoryMap.clear();
+            categories.forEach(cat -> categoryMap.put(cat.getCategoryId(), cat));
+    
+            List<SpecificTypeSingleResponse> specificTypes = specificTypeHelper.searchAllSpecificTypes().getItems();
+            specificTypeMap.clear();
+            specificTypes.forEach(type -> specificTypeMap.put(type.getSpecificTypeId(), type));
+    
+            List<BillSingleResponse> bills = billHelper.searchAllBills().getItems();
+            billMap.clear();
+            bills.forEach(bill -> billMap.put(bill.getBillId(), bill));
+    
+            notifyRefresh();
+            System.out.println("已重新加载数据（分类、具体类型、账单）");
+        } catch (Exception e) {
+            System.err.println("重新加载数据失败：" + e.getMessage());
+            JOptionPane.showMessageDialog(this, "重新加载数据失败：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     // ------------------------------ 缓存操作与刷新通知 ------------------------------
 
     public void addCategory(CategorySingleResponse category) {

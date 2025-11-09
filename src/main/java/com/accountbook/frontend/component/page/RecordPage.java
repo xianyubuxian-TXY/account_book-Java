@@ -339,50 +339,91 @@ public class RecordPage implements PageDrawer {
         }
     }
 
+    /**
+     * 删除大类（Category）
+     * 删除前提示：账单和预算都会迁移到默认分类及默认具体类型“无”
+     */
     private void deleteCategory() {
         ComboItem item = (ComboItem) categoryCombo.getSelectedItem();
         if (item == null) return;
+
+        // 系统默认分类禁止删除
         if (item.id == SYSTEM_DEFAULT_ID) {
-            JOptionPane.showMessageDialog(null, "系统默认类型不可删除！");
+            JOptionPane.showMessageDialog(null, "系统默认分类不可删除！");
             return;
         }
+
+        // 确认对话框
         int confirm = JOptionPane.showConfirmDialog(
                 null,
-                "删除后，该大类及其下具体类型的账单将改为'无'，是否继续？",
+                "删除后：\n" +
+                "① 属于该大类及其下具体类型的账单将迁移到默认分类的'无'类型；\n" +
+                "② 属于该大类的预算会合并或迁移到默认分类。\n\n" +
+                "是否继续？",
                 "确认删除",
                 JOptionPane.YES_NO_OPTION
         );
         if (confirm != JOptionPane.YES_OPTION) return;
 
         try {
+            // 调用后端删除接口
             mainPage.getCategoryHelper().deleteCategory(item.id);
+
+            // 清理前端缓存
             mainPage.getSpecificTypeMap().values().removeIf(t -> t.getCategoryId() == item.id);
             mainPage.deleteCategory(item.id);
 
+            // 刷新下拉选项
             loadCategoryOptions();
             updateSpecificOptionsByCategory();
-            JOptionPane.showMessageDialog(null, "删除成功！");
+
+            // ✅ 调整：删除后强制从后端刷新缓存，避免“未知类型”
+            mainPage.reloadAllData();
+            JOptionPane.showMessageDialog(null, "删除成功！相关账单与预算已迁移到默认分类。");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "删除失败：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    /**
+     * 删除具体类型（SpecificType）
+     * 删除前提示：账单具体类型会改为“无”，不会影响分类和预算
+     */
     private void deleteSpecificType() {
         ComboItem item = (ComboItem) specificCombo.getSelectedItem();
         if (item == null) return;
+
+        // ✅ 新增保护逻辑：禁止删除内置“无”类型（ID=1）
+        if (item.id == SYSTEM_DEFAULT_ID) {
+            JOptionPane.showMessageDialog(null, "内置类型“无”(ID=1)不可删除！");
+            return;
+        }
+
         int confirm = JOptionPane.showConfirmDialog(
                 null,
-                "删除后，属于该具体类型的账单将改为'无'，是否继续？",
+                "删除后：\n" +
+                "① 属于该具体类型的账单将自动改为默认类型“无”；\n" +
+                "② 不影响所属分类及预算。\n\n" +
+                "是否继续？",
                 "确认删除",
                 JOptionPane.YES_NO_OPTION
         );
         if (confirm != JOptionPane.YES_OPTION) return;
 
         try {
+            // 调用后端删除接口
             mainPage.getSpecificTypeHelper().deleteSpecificType(item.id);
+
+            // 从前端内存中移除该具体类型
             mainPage.deleteSpecificType(item.id);
+
+            // 刷新下拉框
             updateSpecificOptionsByCategory();
-            JOptionPane.showMessageDialog(null, "删除成功！");
+
+            // ✅ 调整：删除后强制从后端刷新缓存，避免“未知类型”
+            mainPage.reloadAllData();
+
+            JOptionPane.showMessageDialog(null, "删除成功！相关账单已迁移到默认类型“无”。");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "删除失败：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
         }

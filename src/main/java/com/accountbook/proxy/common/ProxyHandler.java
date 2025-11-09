@@ -12,12 +12,13 @@ import com.accountbook.proxy.helper.impl.BudgetRequestHelper;
 // ProxyHandler.java（中间代理模块）
 public class ProxyHandler {
     private static ServiceProxy accountBookServiceProxy; // AccountBookServiceFactory的代理
+    // 账单请求助手
     private static BillRequestHelper billRequestHelper;
-    // 新增：分类请求助手
+    // 类型请求助手
     private static CategoryRequestHelper categoryRequestHelper;
-    // 新增：具体类型请求助手
+    // 具体类型请求助手
     private static SpecificTypeRequestHelper specificTypeRequestHelper;
-    // 新增：预算请求助手
+    // 预算请求助手
     private static BudgetRequestHelper budgetHelper;
 
     private ProxyHandler() {}
