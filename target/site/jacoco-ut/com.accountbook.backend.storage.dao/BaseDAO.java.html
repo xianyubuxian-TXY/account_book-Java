@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BaseDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.backend.storage.dao</a> &gt; <span class="el_source">BaseDAO.java</span></div><h1>BaseDAO.java</h1><pre class="source lang-java linenums">package com.accountbook.backend.storage.dao;
+
+import java.sql.Statement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.accountbook.backend.storage.db.DBUtil;
+
+/**
+ * 基础数据访问类（所有DAO的父类）
+ * 封装通用CRUD操作，仅处理数据访问，不包含业务逻辑
+ */
+<span class="nc" id="L20">public abstract class BaseDAO {</span>
+
+    // 获取数据库连接（复用DBUtil）
+    protected Connection getConnection() throws SQLException {
+<span class="nc" id="L24">        return DBUtil.getAccountBookConnection();</span>
+    }
+
+    /**
+     * 通用插入操作
+     * @param tableName 表名
+     * @param fieldMap 字段-值映射（key:字段名，value:字段值）
+     * @return 主键
+     */
+    public int insert(String tableName, Map&lt;String, Object&gt; fieldMap) {
+<span class="nc bnc" id="L34" title="All 2 branches missed.">        if (fieldMap.isEmpty()) {</span>
+<span class="nc" id="L35">            throw new IllegalArgumentException(&quot;插入字段不能为空&quot;);</span>
+        }
+    
+        // 拼接SQL
+<span class="nc" id="L39">        StringBuilder sql = new StringBuilder(&quot;INSERT INTO &quot; + tableName + &quot; (&quot;);</span>
+<span class="nc" id="L40">        StringBuilder placeholders = new StringBuilder(&quot;) VALUES (&quot;);</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        for (String field : fieldMap.keySet()) {</span>
+<span class="nc" id="L42">            sql.append(field).append(&quot;,&quot;);</span>
+<span class="nc" id="L43">            placeholders.append(&quot;?,&quot;);</span>
+<span class="nc" id="L44">        }</span>
+<span class="nc" id="L45">        sql.deleteCharAt(sql.length() - 1);</span>
+<span class="nc" id="L46">        placeholders.deleteCharAt(placeholders.length() - 1);</span>
+<span class="nc" id="L47">        sql.append(placeholders).append(&quot;)&quot;);</span>
+    
+<span class="nc" id="L49">        try (Connection conn = getConnection();</span>
+<span class="nc" id="L50">             PreparedStatement pstmt = conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {</span>
+    
+            // 设置参数
+<span class="nc" id="L53">            int index = 1;</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">            for (Object value : fieldMap.values()) {</span>
+<span class="nc" id="L55">                setParameter(pstmt, index++, value);</span>
+<span class="nc" id="L56">            }</span>
+    
+            // 执行插入
+<span class="nc" id="L59">            pstmt.executeUpdate();</span>
+    
+            // 获取生成的主键并返回
+<span class="nc" id="L62">            try (ResultSet rs = pstmt.getGeneratedKeys()) {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L64">                    return rs.getInt(1); // 正常返回主键（int类型）</span>
+                }
+                // 如果未获取到主键，抛出异常（覆盖此路径，无需返回）
+<span class="nc" id="L67">                throw new RuntimeException(&quot;未获取到生成的主键&quot;);</span>
+            }
+    
+<span class="nc" id="L70">        } catch (SQLException e) {</span>
+            // 异常情况下抛出运行时异常（覆盖此路径，无需返回）
+<span class="nc" id="L72">            throw new RuntimeException(&quot;插入数据失败：&quot; + e.getMessage(), e);</span>
+        }
+        // 注意：由于上述代码中所有路径要么return，要么throw，因此无需额外return
+    }
+
+    /**
+     * 通用更新操作
+     * @param tableName 表名
+     * @param fieldMap 要更新的字段-值映射：如&lt;&quot;amount&quot;,300.0&gt;
+     * @param condition 条件（如&quot;id&lt;? and amount&gt;?&quot;）——&gt; ?：占位符
+     * @param conditionParams 条件参数：?占位符的值
+     * @return 影响行数
+     */
+    public int update(String tableName, Map&lt;String, Object&gt; fieldMap, String condition, Object... conditionParams) {
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        if (fieldMap.isEmpty()) {</span>
+<span class="nc" id="L87">            throw new IllegalArgumentException(&quot;更新字段不能为空&quot;);</span>
+        }
+<span class="nc bnc" id="L89" title="All 4 branches missed.">        if (condition == null || condition.trim().isEmpty()) {</span>
+<span class="nc" id="L90">            throw new IllegalArgumentException(&quot;更新条件不能为空（防止全表更新）&quot;);</span>
+        }
+    
+        // 拼接SQL：UPDATE 表名 SET 字段1=?,字段2=?... WHERE 条件
+<span class="nc" id="L94">        StringBuilder sql = new StringBuilder(&quot;UPDATE &quot; + tableName + &quot; SET &quot;);</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        for (String field : fieldMap.keySet()) {</span>
+<span class="nc" id="L96">            sql.append(field).append(&quot;=?,&quot;);</span>
+<span class="nc" id="L97">        }</span>
+    
+<span class="nc" id="L99">        sql.deleteCharAt(sql.length() - 1); // 删除末尾逗号</span>
+<span class="nc" id="L100">        sql.append(&quot; WHERE &quot;).append(condition);</span>
+    
+<span class="nc" id="L102">        try (Connection conn = getConnection();</span>
+             // 移除 RETURN_GENERATED_KEYS 参数（UPDATE 不需要）
+<span class="nc" id="L104">             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {</span>
+            
+            // 设置更新字段的参数
+<span class="nc" id="L107">            int index = 1;</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">            for (Object value : fieldMap.values()) {</span>
+<span class="nc" id="L109">                setParameter(pstmt, index++, value);</span>
+<span class="nc" id="L110">            }</span>
+    
+            // 设置条件参数
+<span class="nc bnc" id="L113" title="All 2 branches missed.">            for (Object param : conditionParams) {</span>
+<span class="nc" id="L114">                setParameter(pstmt, index++, param);</span>
+            }
+    
+            // 执行更新，返回受影响的行数（核心修正）
+<span class="nc" id="L118">            return pstmt.executeUpdate();</span>
+    
+<span class="nc" id="L120">        } catch (SQLException e) {</span>
+<span class="nc" id="L121">            throw new RuntimeException(&quot;更新数据失败：&quot; + e.getMessage(), e);</span>
+        }
+    }
+
+    /**
+     * 通用删除操作
+     * @param tableName 表名
+     * @param condition 条件（如&quot;id&lt;? and amount&gt;?&quot;）——&gt; ?：占位符
+     * @param conditionParams 条件参数：?占位符的值
+     * @return 影响行数
+     */
+    public int delete(String tableName, String condition, Object... conditionParams) {
+<span class="nc bnc" id="L133" title="All 4 branches missed.">        if (condition == null || condition.trim().isEmpty()) {</span>
+<span class="nc" id="L134">            throw new IllegalArgumentException(&quot;删除条件不能为空（防止全表删除）&quot;);</span>
+        }
+    
+<span class="nc" id="L137">        String sql = &quot;DELETE FROM &quot; + tableName + &quot; WHERE &quot; + condition;</span>
+    
+<span class="nc" id="L139">        try (Connection conn = getConnection();</span>
+<span class="nc" id="L140">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+    
+            // 设置条件参数
+<span class="nc bnc" id="L143" title="All 2 branches missed.">            for (int i = 0; i &lt; conditionParams.length; i++) {</span>
+<span class="nc" id="L144">                setParameter(pstmt, i + 1, conditionParams[i]);</span>
+            }
+    
+            // 执行删除，返回受影响的行数（核心修正）
+<span class="nc" id="L148">            return pstmt.executeUpdate();</span>
+    
+<span class="nc" id="L150">        } catch (SQLException e) {</span>
+<span class="nc" id="L151">            throw new RuntimeException(&quot;删除数据失败：&quot; + e.getMessage(), e);</span>
+        }
+    }
+
+    /**
+     * 通用单表查询操作
+     * @param tableName 表名
+     * @param fields 要查询的字段（如&quot;id,name&quot;，*表示所有字段）
+     * @param condition 条件（如&quot;id=?&quot;，可为null表示查询所有）
+     * @param conditionParams 条件参数
+     * @return 结果列表（Map&lt;字段名, 值&gt;）
+     */
+    public List&lt;Map&lt;String, Object&gt;&gt; query(String tableName, String fields, String condition, Object... conditionParams) {
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        String sql = &quot;SELECT &quot; + (fields == null ? &quot;*&quot; : fields) + &quot; FROM &quot; + tableName;</span>
+<span class="nc bnc" id="L165" title="All 4 branches missed.">        if (condition != null &amp;&amp; !condition.trim().isEmpty()) {</span>
+<span class="nc" id="L166">            sql += &quot; WHERE &quot; + condition;</span>
+        }
+
+<span class="nc" id="L169">        List&lt;Map&lt;String, Object&gt;&gt; result = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L171">        try (Connection conn = getConnection();</span>
+<span class="nc" id="L172">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+
+            // 修复点：先设置参数，再执行查询（原代码顺序颠倒）
+            // 设置条件参数
+<span class="nc bnc" id="L176" title="All 2 branches missed.">            for (int i = 0; i &lt; conditionParams.length; i++) {</span>
+<span class="nc" id="L177">                setParameter(pstmt, i + 1, conditionParams[i]);</span>
+            }
+
+            // 执行查询（此时参数已设置）
+<span class="nc" id="L181">            try (ResultSet rs = pstmt.executeQuery()) {</span>
+                // 封装结果集
+<span class="nc" id="L183">                ResultSetMetaData metaData = rs.getMetaData();</span>
+<span class="nc" id="L184">                int columnCount = metaData.getColumnCount();</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L186">                    Map&lt;String, Object&gt; row = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">                    for (int i = 1; i &lt;= columnCount; i++) {</span>
+<span class="nc" id="L188">                        row.put(metaData.getColumnName(i), rs.getObject(i));</span>
+                    }
+<span class="nc" id="L190">                    result.add(row);</span>
+<span class="nc" id="L191">                }</span>
+            }
+<span class="nc" id="L193">        } catch (SQLException e) {</span>
+<span class="nc" id="L194">            throw new RuntimeException(&quot;查询数据失败：&quot; + e.getMessage(), e);</span>
+<span class="nc" id="L195">        }</span>
+
+<span class="nc" id="L197">        return result;</span>
+    }
+
+    /**
+     * 执行自定义SQL查询（支持多表关联）
+     * @param customSql 自定义查询SQL
+     * @param params SQL参数
+     * @return 结果列表（Map&lt;字段名, 值&gt;）
+     */
+    public List&lt;Map&lt;String, Object&gt;&gt; queryByCustomSql(String customSql, Object... params) {
+<span class="nc" id="L207">        List&lt;Map&lt;String, Object&gt;&gt; result = new ArrayList&lt;&gt;();</span>
+    
+<span class="nc" id="L209">        try (Connection conn = getConnection();</span>
+<span class="nc" id="L210">             PreparedStatement pstmt = conn.prepareStatement(customSql)) {</span>
+    
+            // 设置参数
+<span class="nc bnc" id="L213" title="All 2 branches missed.">            for (int i = 0; i &lt; params.length; i++) {</span>
+<span class="nc" id="L214">                setParameter(pstmt, i + 1, params[i]);</span>
+            }
+    
+<span class="nc" id="L217">            try (ResultSet rs = pstmt.executeQuery()) {</span>
+<span class="nc" id="L218">                ResultSetMetaData metaData = rs.getMetaData();</span>
+<span class="nc" id="L219">                int columnCount = metaData.getColumnCount();</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L221">                    Map&lt;String, Object&gt; row = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">                    for (int i = 1; i &lt;= columnCount; i++) {</span>
+                        // 关键修复：使用getColumnLabel()获取别名，而非getColumnName()
+<span class="nc" id="L224">                        String columnKey = metaData.getColumnLabel(i); </span>
+<span class="nc" id="L225">                        row.put(columnKey, rs.getObject(i));</span>
+                    }
+<span class="nc" id="L227">                    result.add(row);</span>
+<span class="nc" id="L228">                }</span>
+            }
+<span class="nc" id="L230">        } catch (SQLException e) {</span>
+<span class="nc" id="L231">            throw new RuntimeException(&quot;自定义查询失败：&quot; + e.getMessage(), e);</span>
+<span class="nc" id="L232">        }</span>
+    
+<span class="nc" id="L234">        return result;</span>
+    }
+
+    /**
+     * 执行自定义更新SQL（如INSERT IGNORE、CREATE等）
+     * @param customSql 自定义SQL
+     * @param params SQL参数
+     * @return 影响行数
+     */
+    public int executeCustomUpdate(String customSql, Object... params) {
+<span class="nc" id="L244">        try (Connection conn = getConnection();</span>
+<span class="nc" id="L245">             PreparedStatement pstmt = conn.prepareStatement(customSql)) {</span>
+
+            // 设置参数
+<span class="nc bnc" id="L248" title="All 2 branches missed.">            for (int i = 0; i &lt; params.length; i++) {</span>
+<span class="nc" id="L249">                setParameter(pstmt, i + 1, params[i]);</span>
+            }
+
+<span class="nc" id="L252">            return pstmt.executeUpdate();</span>
+<span class="nc" id="L253">        } catch (SQLException e) {</span>
+<span class="nc" id="L254">            throw new RuntimeException(&quot;自定义更新失败：&quot; + e.getMessage(), e);</span>
+        }
+    }
+
+    /**
+     * 设置SQL参数（根据值类型自动适配）
+     */
+    protected void setParameter(PreparedStatement pstmt, int index, Object value) throws SQLException {
+<span class="nc bnc" id="L262" title="All 2 branches missed.">        if (value == null) {</span>
+<span class="nc" id="L263">            pstmt.setNull(index, java.sql.Types.NULL);</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">        } else if (value instanceof String) {</span>
+<span class="nc" id="L265">            pstmt.setString(index, (String) value);</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">        } else if (value instanceof Integer) {</span>
+<span class="nc" id="L267">            pstmt.setInt(index, (Integer) value);</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">        } else if (value instanceof Double) {</span>
+<span class="nc" id="L269">            pstmt.setDouble(index, (Double) value);</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">        } else if (value instanceof java.math.BigDecimal) {</span>
+<span class="nc" id="L271">            pstmt.setBigDecimal(index, (java.math.BigDecimal) value);</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">        } else if (value instanceof java.sql.Date) {</span>
+<span class="nc" id="L273">            pstmt.setDate(index, (java.sql.Date) value);</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">        } else if (value instanceof java.util.Date) {</span>
+<span class="nc" id="L275">            pstmt.setTimestamp(index, new java.sql.Timestamp(((java.util.Date) value).getTime()));</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">        } else if (value instanceof java.time.LocalDateTime) {</span>
+<span class="nc" id="L277">            pstmt.setTimestamp(index, java.sql.Timestamp.valueOf((java.time.LocalDateTime) value));</span>
+        } else {
+            // 其他类型默认转为字符串
+<span class="nc" id="L280">            pstmt.setString(index, value.toString());</span>
+        }
+<span class="nc" id="L282">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChangeCategoryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.backend.service.impl.category</a> &gt; <span class="el_source">ChangeCategoryService.java</span></div><h1>ChangeCategoryService.java</h1><pre class="source lang-java linenums">package com.accountbook.backend.service.impl.category;
+
+import com.accountbook.backend.common.exception.BusinessServiceException;
+import com.accountbook.backend.service.BusinessService;
+import com.accountbook.backend.storage.dao.CategoryDAO;
+import com.accountbook.backend.storage.dao.factory.DAOFactory;
+import com.accountbook.backend.storage.entity.Category;
+import com.accountbook.proxy.request.category.CategoryChangeParams;
+import com.accountbook.proxy.response.category.CategorySingleResponse;
+
+import java.util.Map;
+
+/**
+ * 分类修改业务实现类（参考ChangeBillService设计风格）
+ */
+<span class="nc" id="L16">public class ChangeCategoryService implements BusinessService&lt;CategoryChangeParams, CategorySingleResponse&gt; {</span>
+
+    // 注入分类DAO（通过工厂获取，与账单服务保持一致）
+<span class="nc" id="L19">    private final CategoryDAO categoryDAO = DAOFactory.getCategoryDAO();</span>
+
+    @Override
+    public CategorySingleResponse execute(CategoryChangeParams params) throws Exception {
+<span class="nc" id="L23">        System.out.println(&quot;执行分类修改业务&quot;);</span>
+
+        // 1. 获取要修改的分类ID和更新字段Map
+<span class="nc" id="L26">        Integer categoryId = params.getCategoryId();</span>
+<span class="nc" id="L27">        Map&lt;String, Object&gt; updateMap = params.toMap(); // 仅包含非空的修改字段（如name）</span>
+
+        // 2. 调用DAO更新分类信息，获取影响行数
+<span class="nc" id="L30">        int affectRows = categoryDAO.updateCategoryById(categoryId, updateMap);</span>
+
+        // 3. 校验更新结果（-1=更新异常，0=未找到对应分类）
+<span class="nc bnc" id="L33" title="All 4 branches missed.">        if (affectRows == -1 || affectRows == 0) {</span>
+<span class="nc" id="L34">            throw new BusinessServiceException(&quot;修改分类失败：ID=&quot; + categoryId + &quot;，可能不存在或更新异常&quot;);</span>
+        }
+
+        // 4. 查询更新后的分类信息（确保返回最新数据）
+<span class="nc" id="L38">        Category updatedCategory = categoryDAO.queryCategoryById(categoryId);</span>
+
+        // 5. 转换为响应对象并返回
+<span class="nc" id="L41">        return CategorySingleResponse.fromCategory(updatedCategory);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

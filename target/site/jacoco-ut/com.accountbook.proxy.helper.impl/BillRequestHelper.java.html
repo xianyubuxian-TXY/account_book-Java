@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BillRequestHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.proxy.helper.impl</a> &gt; <span class="el_source">BillRequestHelper.java</span></div><h1>BillRequestHelper.java</h1><pre class="source lang-java linenums">package com.accountbook.proxy.helper.impl;
+
+import com.accountbook.proxy.FrontendRequest;
+import com.accountbook.proxy.FrontendRequest.RequestType;
+import com.accountbook.proxy.helper.BaseRequestHelper;
+import com.accountbook.proxy.request.bill.BillAddParams;
+import com.accountbook.proxy.request.bill.BillChangeParams;
+import com.accountbook.proxy.request.bill.BillDeleteParams;
+import com.accountbook.proxy.request.bill.BillSearchParams;
+import com.accountbook.proxy.response.bill.BillDeleteResponse;
+import com.accountbook.proxy.response.bill.BillListResponse;
+import com.accountbook.proxy.response.bill.BillSingleResponse;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+/**
+ * 账单相关请求封装（优化参数一致性与业务适配）
+ */
+<span class="nc" id="L20">public class BillRequestHelper extends BaseRequestHelper {</span>
+
+    /**
+     * 新增账单：返回新增的账单详情
+     * 修正参数：将accountId改为specificTypeId（符合大类+具体类型的业务设计）
+     */
+    public BillSingleResponse addBill(
+            String billTime, int type, int categoryId, int specificTypeId, 
+            BigDecimal amount, String remark) {
+<span class="nc" id="L29">        validateParamNotNull(billTime, &quot;账单时间不能为空&quot;);</span>
+<span class="nc" id="L30">        validateParamNotNull(amount, &quot;账单金额不能为空&quot;);</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        validateParamTrue(amount.compareTo(BigDecimal.ZERO) &gt; 0, &quot;账单金额必须大于0&quot;);</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">        validateParamTrue(categoryId &gt; 0, &quot;大类ID必须为正整数&quot;);</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        validateParamTrue(specificTypeId &gt; 0, &quot;具体类型ID必须为正整数&quot;);</span>
+
+<span class="nc" id="L35">        BillAddParams params = new BillAddParams(billTime, type, categoryId, specificTypeId, amount, remark);</span>
+<span class="nc" id="L36">        FrontendRequest&lt;BillAddParams&gt; request = new FrontendRequest&lt;&gt;(RequestType.ADD_BILL, params);</span>
+<span class="nc" id="L37">        return parseResponse(sendRequest(request));</span>
+    }
+
+    // 在BillRequestHelper中补充updateBill方法（完整实现）
+    public BillSingleResponse updateBill(
+            Integer billId, String time, Integer type,
+            Integer categoryId, Integer specificTypeId,
+            BigDecimal amount, String remark) {
+        // 1. 参数校验
+<span class="nc" id="L46">        validateParamNotNull(billId, &quot;账单ID不能为空&quot;);</span>
+<span class="nc" id="L47">        validateParamNotNull(time, &quot;账单时间不能为空&quot;);</span>
+<span class="nc" id="L48">        validateParamNotNull(type, &quot;收支类型不能为空&quot;);</span>
+<span class="nc bnc" id="L49" title="All 4 branches missed.">        validateParamTrue(type == 1 || type == -1, &quot;收支类型必须为1（收入）或-1（支出）&quot;);</span>
+<span class="nc" id="L50">        validateParamNotNull(categoryId, &quot;大类ID不能为空&quot;);</span>
+<span class="nc" id="L51">        validateParamNotNull(specificTypeId, &quot;具体类型ID不能为空&quot;);</span>
+<span class="nc" id="L52">        validateParamNotNull(amount, &quot;金额不能为空&quot;);</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        validateParamTrue(amount.compareTo(BigDecimal.ZERO) &gt; 0, &quot;金额必须大于0&quot;);</span>
+
+        // 2. 构建修改参数
+<span class="nc" id="L56">        BillChangeParams params = new BillChangeParams(billId);</span>
+<span class="nc" id="L57">        params.setBillTime(time);</span>
+<span class="nc" id="L58">        params.setType(type);</span>
+<span class="nc" id="L59">        params.setCategoryId(categoryId);</span>
+<span class="nc" id="L60">        params.setSpecificTypeId(specificTypeId);</span>
+<span class="nc" id="L61">        params.setAmount(amount);</span>
+<span class="nc" id="L62">        params.setRemark(remark);</span>
+
+        // 3. 调用后端更新接口（确保同步到数据库）
+<span class="nc" id="L65">        FrontendRequest&lt;BillChangeParams&gt; request = new FrontendRequest&lt;&gt;(RequestType.CHANGE_BILL, params);</span>
+<span class="nc" id="L66">        return parseResponse(sendRequest(request));</span>
+    }
+
+    /**
+     * 批量更新账单的大类ID（用于删除大类时，将关联账单迁移到&quot;无&quot;类型）
+     */
+    public BillListResponse updateBillsCategory(Integer oldCategoryId, Integer newCategoryId) {
+<span class="nc" id="L73">        validateParamNotNull(oldCategoryId, &quot;原大类ID不能为空&quot;);</span>
+<span class="nc" id="L74">        validateParamNotNull(newCategoryId, &quot;新大类ID不能为空&quot;);</span>
+<span class="nc bnc" id="L75" title="All 4 branches missed.">        validateParamTrue(oldCategoryId &gt; 0 &amp;&amp; newCategoryId &gt; 0, &quot;大类ID必须为正整数&quot;);</span>
+
+        // 构建仅更新大类ID的参数（其他字段为null表示不修改）
+<span class="nc" id="L78">        BillChangeParams batchParams = new BillChangeParams(</span>
+                null, null, null, newCategoryId, null, null, null
+        );
+        // 结合搜索条件：筛选出所有属于oldCategoryId的账单
+<span class="nc" id="L82">        BillSearchParams searchParams = new BillSearchParams(null, null, oldCategoryId, null, null, null);</span>
+        
+        // 发送批量更新请求（假设后端支持按条件批量更新）
+<span class="nc" id="L85">        FrontendRequest&lt;BillChangeParams&gt; request = new FrontendRequest&lt;&gt;(</span>
+                RequestType.BATCH_UPDATE_BILL, batchParams, searchParams
+        );
+<span class="nc" id="L88">        return parseResponse(sendRequest(request));</span>
+    }
+
+    /**
+     * 批量更新账单的具体类型ID（用于删除具体类型时，将关联账单迁移到&quot;无&quot;类型）
+     */
+    public BillListResponse updateBillsSpecificType(Integer oldSpecificTypeId, Integer newSpecificTypeId) {
+<span class="nc" id="L95">        validateParamNotNull(oldSpecificTypeId, &quot;原具体类型ID不能为空&quot;);</span>
+<span class="nc" id="L96">        validateParamNotNull(newSpecificTypeId, &quot;新具体类型ID不能为空&quot;);</span>
+<span class="nc bnc" id="L97" title="All 4 branches missed.">        validateParamTrue(oldSpecificTypeId &gt; 0 &amp;&amp; newSpecificTypeId &gt; 0, &quot;具体类型ID必须为正整数&quot;);</span>
+
+        // 构建仅更新具体类型ID的参数
+<span class="nc" id="L100">        BillChangeParams batchParams = new BillChangeParams(</span>
+                null, null, null, null, newSpecificTypeId, null, null
+        );
+        // 筛选出所有属于oldSpecificTypeId的账单
+<span class="nc" id="L104">        BillSearchParams searchParams = new BillSearchParams(null, null, null, oldSpecificTypeId, null, null);</span>
+        
+<span class="nc" id="L106">        FrontendRequest&lt;BillChangeParams&gt; request = new FrontendRequest&lt;&gt;(</span>
+                RequestType.BATCH_UPDATE_BILL, batchParams, searchParams
+        );
+<span class="nc" id="L109">        return parseResponse(sendRequest(request));</span>
+    }
+
+    /**
+     * 删除账单：返回被删除的账单ID信息
+     */
+    public BillDeleteResponse deleteBill(Integer billId) {
+<span class="nc" id="L116">        validateParamNotNull(billId, &quot;账单ID不能为空&quot;);</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        validateParamTrue(billId &gt; 0, &quot;账单ID必须为正整数（当前值：&quot; + billId + &quot;）&quot;);</span>
+
+<span class="nc" id="L119">        BillDeleteParams params = new BillDeleteParams(billId);</span>
+<span class="nc" id="L120">        FrontendRequest&lt;BillDeleteParams&gt; request = new FrontendRequest&lt;&gt;(RequestType.DELETE_BILL, params);</span>
+<span class="nc" id="L121">        return parseResponse(sendRequest(request));</span>
+    }
+
+    /**
+     * 搜索账单（单值查询）：返回符合条件的账单列表
+     */
+    public BillListResponse searchBill(
+            String time, Integer type, Integer categoryId,
+            Integer specificTypeId, BigDecimal amount, String key) {
+<span class="nc" id="L130">        BillSearchParams params = new BillSearchParams(time, type, categoryId, specificTypeId, amount, key);</span>
+<span class="nc" id="L131">        FrontendRequest&lt;BillSearchParams&gt; request = new FrontendRequest&lt;&gt;(RequestType.SEARCH_BILL, params);</span>
+<span class="nc" id="L132">        return parseResponse(sendRequest(request));</span>
+    }
+
+    /**
+     * 搜索账单（范围查询）：返回符合条件的账单列表
+     */
+    public BillListResponse searchBillByRange(
+            String timeStart, String timeEnd, Integer type,
+            Integer categoryId, Integer specificTypeId,
+            BigDecimal amountMin, BigDecimal amountMax, String key) {
+<span class="nc" id="L142">        BillSearchParams params = new BillSearchParams(</span>
+                timeStart, timeEnd, type, categoryId, specificTypeId, 
+                amountMin, amountMax, key
+        );
+<span class="nc" id="L146">        FrontendRequest&lt;BillSearchParams&gt; request = new FrontendRequest&lt;&gt;(RequestType.SEARCH_BILL, params);</span>
+<span class="nc" id="L147">        return parseResponse(sendRequest(request));</span>
+    }
+
+    /**
+     * 按ID查询账单：返回唯一账单详情
+     */
+    public BillSingleResponse searchBillById(Integer billId) {
+<span class="nc" id="L154">        validateParamNotNull(billId, &quot;账单ID不能为空&quot;);</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        validateParamTrue(billId &gt; 0, &quot;账单ID必须为正整数（当前值：&quot; + billId + &quot;）&quot;);</span>
+    
+        // 关键修复：通过setter方法显式设置billId（确保参数被正确存储）
+<span class="nc" id="L158">        BillSearchParams params = new BillSearchParams();</span>
+<span class="nc" id="L159">        params.setId(billId); // 假设BillSearchParams有setBillId()方法</span>
+    
+        // 补充：打印参数日志，验证billId是否被正确设置
+<span class="nc" id="L162">        System.out.println(&quot;查询参数：billId=&quot; + params.getId()); // 确认输出为43</span>
+    
+        // 发送查询请求（确保RequestType与后端匹配）
+<span class="nc" id="L165">        FrontendRequest&lt;BillSearchParams&gt; request = new FrontendRequest&lt;&gt;(RequestType.SEARCH_BILL, params);</span>
+<span class="nc" id="L166">        BillListResponse listResponse = parseResponse(sendRequest(request));</span>
+    
+<span class="nc" id="L168">        List&lt;BillSingleResponse&gt; bills = listResponse.getItems();</span>
+<span class="nc bnc" id="L169" title="All 4 branches missed.">        if (bills == null || bills.isEmpty()) {</span>
+<span class="nc" id="L170">            throw new RuntimeException(&quot;未找到ID为&quot; + billId + &quot;的账单&quot;);</span>
+        }
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        if (bills.size() &gt; 1) {</span>
+            // 打印所有返回的账单ID，辅助确认后端是否真的按ID过滤
+<span class="nc" id="L174">            StringBuilder ids = new StringBuilder();</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">            for (BillSingleResponse bill : bills) {</span>
+<span class="nc" id="L176">                ids.append(bill.getBillId()).append(&quot;,&quot;);</span>
+<span class="nc" id="L177">            }</span>
+<span class="nc" id="L178">            throw new RuntimeException(&quot;查询异常：按ID=&quot; + billId + &quot;查询到&quot; + bills.size() + &quot;条记录，实际ID为：&quot; + ids);</span>
+        }
+    
+<span class="nc" id="L181">        return bills.get(0);</span>
+    }
+
+    /**
+     * 查询所有账单（按时间倒序）
+     */
+    public BillListResponse searchAllBills() {
+<span class="nc" id="L188">        BillSearchParams emptyParams = new BillSearchParams();</span>
+<span class="nc" id="L189">        FrontendRequest&lt;BillSearchParams&gt; request = new FrontendRequest&lt;&gt;(RequestType.SEARCH_BILL, emptyParams);</span>
+<span class="nc" id="L190">        return parseResponse(sendRequest(request));</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

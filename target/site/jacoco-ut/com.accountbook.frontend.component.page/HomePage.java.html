@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HomePage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.frontend.component.page</a> &gt; <span class="el_source">HomePage.java</span></div><h1>HomePage.java</h1><pre class="source lang-java linenums">package com.accountbook.frontend.component.page;
+
+import com.accountbook.frontend.MainPage;
+import com.accountbook.frontend.component.PageDrawer;
+import com.accountbook.frontend.component.Refreshable;
+import com.accountbook.frontend.component.dialog.BillEditDialog;
+
+import com.accountbook.proxy.helper.impl.BudgetRequestHelper;
+import com.accountbook.proxy.response.budget.BudgetListResponse;
+import com.accountbook.proxy.response.budget.BudgetSingleResponse;
+
+import com.accountbook.proxy.response.bill.BillSingleResponse;
+import com.accountbook.proxy.response.category.CategorySingleResponse;
+import com.accountbook.proxy.response.specific_type.SpecificTypeSingleResponse;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+
+public class HomePage implements PageDrawer, Refreshable {
+    private static volatile HomePage instance;
+    private final MainPage mainPage;
+<span class="nc" id="L33">    private final DecimalFormat decimalFormat = new DecimalFormat(&quot;0.00&quot;);</span>
+<span class="nc" id="L34">    private int currentFontSize = 12;</span>
+    private JPanel currentContentPanel;
+
+    /** 用于标记当前中间面板显示的是哪个页面 */
+    private static final String PAGE_KEY = &quot;currentPage&quot;;
+
+<span class="nc" id="L40">    private HomePage(MainPage mainPage) {</span>
+<span class="nc" id="L41">        this.mainPage = mainPage;</span>
+<span class="nc" id="L42">        this.mainPage.registerRefreshable(this);</span>
+<span class="nc" id="L43">    }</span>
+
+    public static HomePage getInstance(MainPage mainPage) {
+<span class="nc bnc" id="L46" title="All 2 branches missed.">        if (instance == null) {</span>
+<span class="nc" id="L47">            synchronized (HomePage.class) {</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">                if (instance == null) {</span>
+<span class="nc" id="L49">                    instance = new HomePage(mainPage);</span>
+                }
+<span class="nc" id="L51">            }</span>
+        }
+<span class="nc" id="L53">        return instance;</span>
+    }
+
+    @Override
+    public void draw(JPanel contentPanel) {
+<span class="nc" id="L58">        this.currentContentPanel = contentPanel;</span>
+
+        // 标记当前显示的是首页
+<span class="nc" id="L61">        contentPanel.putClientProperty(PAGE_KEY, &quot;HOME&quot;);</span>
+
+<span class="nc" id="L63">        contentPanel.removeAll();</span>
+<span class="nc" id="L64">        contentPanel.setLayout(new BorderLayout(0, 20));</span>
+<span class="nc" id="L65">        contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));</span>
+<span class="nc" id="L66">        contentPanel.setBackground(Color.WHITE);</span>
+<span class="nc" id="L67">        buildPageComponents(contentPanel);</span>
+<span class="nc" id="L68">    }</span>
+
+    private void buildPageComponents(JPanel contentPanel) {
+<span class="nc" id="L71">        Map&lt;Integer, BillSingleResponse&gt; billMap = mainPage.getBillMap();</span>
+
+<span class="nc" id="L73">        BigDecimal totalExpense = BigDecimal.ZERO;</span>
+<span class="nc" id="L74">        BigDecimal totalIncome = BigDecimal.ZERO;</span>
+
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        for (BillSingleResponse bill : billMap.values()) {</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">            if (bill.getType() == -1) totalExpense = totalExpense.add(bill.getAmount());</span>
+<span class="nc" id="L78">            else totalIncome = totalIncome.add(bill.getAmount());</span>
+<span class="nc" id="L79">        }</span>
+
+        // 当前年月
+<span class="nc" id="L82">        String currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern(&quot;yyyy-MM&quot;));</span>
+
+        // ✅ 核心改动：根据当前年月从后端查本月所有预算并求和
+<span class="nc" id="L85">        BigDecimal budget = queryCurrentMonthTotalBudget(currentMonth);</span>
+
+<span class="nc" id="L87">        BigDecimal remainingBudget = budget.subtract(totalExpense);</span>
+<span class="nc" id="L88">        BigDecimal netIncome = totalIncome.subtract(totalExpense);</span>
+
+<span class="nc" id="L90">        JPanel statsPanel = createStatsPanel(</span>
+                currentMonth, budget, totalExpense, remainingBudget, totalIncome, netIncome
+        );
+<span class="nc" id="L93">        contentPanel.add(statsPanel, BorderLayout.NORTH);</span>
+
+<span class="nc" id="L95">        JPanel billListPanel = createBillListPanel(billMap);</span>
+<span class="nc" id="L96">        contentPanel.add(billListPanel, BorderLayout.CENTER);</span>
+
+<span class="nc" id="L98">        contentPanel.addComponentListener(new ComponentAdapter() {</span>
+            @Override
+            public void componentResized(ComponentEvent e) {
+<span class="nc" id="L101">                adjustFontSize(contentPanel.getWidth());</span>
+<span class="nc" id="L102">                contentPanel.revalidate();</span>
+<span class="nc" id="L103">                contentPanel.repaint();</span>
+<span class="nc" id="L104">            }</span>
+        });
+
+<span class="nc" id="L107">        contentPanel.revalidate();</span>
+<span class="nc" id="L108">        contentPanel.repaint();</span>
+<span class="nc" id="L109">    }</span>
+
+    /**
+     * 按当前月份查询所有预算并求和
+     * month 格式必须是 yyyy-MM
+     */
+    private BigDecimal queryCurrentMonthTotalBudget(String month) {
+        try {
+            // 如你的 MainPage 提供的方法名不同，请替换为实际方法名
+<span class="nc" id="L118">            BudgetRequestHelper budgetHelper = mainPage.getBudgetHelper();</span>
+
+            // 传 month，categoryId 传 null =&gt; 查询该月份所有分类预算
+<span class="nc" id="L121">            BudgetListResponse listResponse = budgetHelper.searchBudget(month, null);</span>
+
+<span class="nc" id="L123">            BigDecimal sum = BigDecimal.ZERO;</span>
+<span class="nc bnc" id="L124" title="All 4 branches missed.">            if (listResponse != null &amp;&amp; listResponse.getItems() != null) {</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                for (BudgetSingleResponse item : listResponse.getItems()) {</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">                    if (item.getTotalBudget() != null) {</span>
+<span class="nc" id="L127">                        sum = sum.add(item.getTotalBudget());</span>
+                    }
+<span class="nc" id="L129">                }</span>
+            }
+<span class="nc" id="L131">            return sum;</span>
+<span class="nc" id="L132">        } catch (Exception e) {</span>
+            // 不影响首页展示，失败时回退为 0
+<span class="nc" id="L134">            System.err.println(&quot;查询当月预算失败：&quot; + e.getMessage());</span>
+<span class="nc" id="L135">            return BigDecimal.ZERO;</span>
+        }
+    }
+
+    /**
+     * 只在“当前中间面板仍然标记为 HOME”时才刷新，
+     * 避免在录入页等操作后把页面强行切回首页。
+     */
+    @Override
+    public void refresh() {
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (currentContentPanel == null) {</span>
+<span class="nc" id="L146">            return;</span>
+        }
+<span class="nc" id="L148">        Object flag = currentContentPanel.getClientProperty(PAGE_KEY);</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        if (!&quot;HOME&quot;.equals(flag)) {</span>
+            // 当前展示的不是首页，跳过刷新，避免“自动跳回首页”
+<span class="nc" id="L151">            return;</span>
+        }
+<span class="nc" id="L153">        draw(currentContentPanel);</span>
+<span class="nc" id="L154">    }</span>
+
+    private void adjustFontSize(int width) {
+<span class="nc bnc" id="L157" title="All 6 branches missed.">        currentFontSize = width &lt; 800 ? 10 : (width &lt; 1200 ? 12 : (width &lt; 1600 ? 14 : 16));</span>
+<span class="nc" id="L158">    }</span>
+
+    private JPanel createStatsPanel(String currentMonth, BigDecimal budget, BigDecimal totalExpense,
+                                   BigDecimal remainingBudget, BigDecimal totalIncome, BigDecimal netIncome) {
+<span class="nc" id="L162">        JPanel panel = new JPanel(new GridLayout(1, 6, 15, 20));</span>
+<span class="nc" id="L163">        panel.setPreferredSize(new Dimension(0, 120));</span>
+<span class="nc" id="L164">        panel.setBackground(new Color(135, 206, 250));</span>
+<span class="nc" id="L165">        panel.setBorder(BorderFactory.createLineBorder(Color.BLACK));</span>
+
+<span class="nc" id="L167">        String expenseStr = decimalFormat.format(totalExpense) + &quot; (&quot; +</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">                (totalExpense.compareTo(BigDecimal.ZERO) == 0 ? 0 :</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">                        totalExpense.divide(budget.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ONE : budget, 4, RoundingMode.HALF_UP)</span>
+<span class="nc" id="L170">                                .multiply(new BigDecimal(&quot;100&quot;))).intValue() + &quot;%)&quot;;</span>
+<span class="nc" id="L171">        String remainingStr = decimalFormat.format(remainingBudget);</span>
+<span class="nc" id="L172">        String incomeStr = decimalFormat.format(totalIncome);</span>
+<span class="nc" id="L173">        String netStr = decimalFormat.format(netIncome);</span>
+
+<span class="nc" id="L175">        addStatItem(panel, &quot;当前年月&quot;, currentMonth, Color.WHITE);</span>
+<span class="nc" id="L176">        addStatItem(panel, &quot;预算/元&quot;, budget.toPlainString(), Color.WHITE);</span>
+<span class="nc" id="L177">        addStatItem(panel, &quot;已支出/元&quot;, expenseStr, Color.WHITE);</span>
+<span class="nc" id="L178">        addStatItem(panel, &quot;剩余预算/元&quot;, remainingStr,</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">                remainingBudget.compareTo(BigDecimal.ZERO) &lt; 0 ? Color.RED : Color.WHITE);</span>
+<span class="nc" id="L180">        addStatItem(panel, &quot;收入/元&quot;, incomeStr, Color.WHITE);</span>
+<span class="nc" id="L181">        addStatItem(panel, &quot;净收入/元&quot;, netStr,</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">                netIncome.compareTo(BigDecimal.ZERO) &lt; 0 ? Color.RED : Color.WHITE);</span>
+<span class="nc" id="L183">        return panel;</span>
+    }
+
+    private void addStatItem(JPanel panel, String title, String value, Color valueColor) {
+<span class="nc" id="L187">        JPanel itemPanel = new JPanel(new BorderLayout(0, 8));</span>
+<span class="nc" id="L188">        itemPanel.setBackground(new Color(135, 206, 250));</span>
+
+<span class="nc" id="L190">        JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);</span>
+<span class="nc" id="L191">        titleLabel.setForeground(Color.WHITE);</span>
+<span class="nc" id="L192">        titleLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.BOLD, currentFontSize + 3));</span>
+
+<span class="nc" id="L194">        JLabel valueLabel = new JLabel(value, SwingConstants.CENTER);</span>
+<span class="nc" id="L195">        valueLabel.setForeground(valueColor);</span>
+<span class="nc" id="L196">        valueLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, currentFontSize + 3));</span>
+
+<span class="nc" id="L198">        itemPanel.add(titleLabel, BorderLayout.NORTH);</span>
+<span class="nc" id="L199">        itemPanel.add(valueLabel, BorderLayout.CENTER);</span>
+<span class="nc" id="L200">        panel.add(itemPanel);</span>
+<span class="nc" id="L201">    }</span>
+
+    private JPanel createBillListPanel(Map&lt;Integer, BillSingleResponse&gt; billMap) {
+<span class="nc" id="L204">        JPanel panel = new JPanel(new BorderLayout());</span>
+<span class="nc" id="L205">        panel.setBorder(BorderFactory.createTitledBorder(&quot;账单列表&quot;));</span>
+<span class="nc" id="L206">        panel.setBackground(Color.WHITE);</span>
+
+<span class="nc" id="L208">        JPanel headerPanel = new JPanel(new GridLayout(1, 6));</span>
+<span class="nc" id="L209">        headerPanel.setPreferredSize(new Dimension(0, 40));</span>
+<span class="nc" id="L210">        headerPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));</span>
+<span class="nc" id="L211">        headerPanel.setBackground(Color.WHITE);</span>
+
+<span class="nc" id="L213">        String[] headers = {&quot;时间&quot;, &quot;支出/收入&quot;, &quot;类型&quot;, &quot;金额/元&quot;, &quot;备注&quot;, &quot;操作&quot;};</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">        for (String header : headers) {</span>
+<span class="nc" id="L215">            JLabel label = new JLabel(header, SwingConstants.CENTER);</span>
+<span class="nc" id="L216">            label.setFont(new Font(&quot;微软雅黑&quot;, Font.BOLD, currentFontSize));</span>
+<span class="nc" id="L217">            label.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L218">            label.setOpaque(true);</span>
+<span class="nc" id="L219">            label.setBackground(Color.WHITE);</span>
+<span class="nc" id="L220">            headerPanel.add(label);</span>
+        }
+<span class="nc" id="L222">        panel.add(headerPanel, BorderLayout.NORTH);</span>
+
+        // 原来的列表面板：纵向从上往下添加
+<span class="nc" id="L225">        JPanel listPanel = new JPanel();</span>
+<span class="nc" id="L226">        listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));</span>
+<span class="nc" id="L227">        listPanel.setBackground(Color.WHITE);</span>
+
+<span class="nc bnc" id="L229" title="All 2 branches missed.">        if (billMap.isEmpty()) {</span>
+<span class="nc" id="L230">            JLabel emptyLabel = new JLabel(&quot;暂无账单数据，请添加账单&quot;, SwingConstants.CENTER);</span>
+<span class="nc" id="L231">            emptyLabel.setPreferredSize(new Dimension(0, 200));</span>
+<span class="nc" id="L232">            emptyLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, currentFontSize + 2));</span>
+<span class="nc" id="L233">            emptyLabel.setForeground(new Color(100, 100, 100));</span>
+<span class="nc" id="L234">            listPanel.add(emptyLabel);</span>
+<span class="nc" id="L235">        } else {</span>
+<span class="nc" id="L236">            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm:ss&quot;);</span>
+<span class="nc" id="L237">            billMap.values().stream()</span>
+<span class="nc" id="L238">                    .sorted((b1, b2) -&gt; {</span>
+<span class="nc" id="L239">                        LocalDateTime t1 = LocalDateTime.parse(b1.getBillTime(), formatter);</span>
+<span class="nc" id="L240">                        LocalDateTime t2 = LocalDateTime.parse(b2.getBillTime(), formatter);</span>
+<span class="nc" id="L241">                        return t2.compareTo(t1); // 保持“新到旧”顺序：从上往下展示</span>
+                    })
+<span class="nc" id="L243">                    .forEach(bill -&gt; {</span>
+<span class="nc" id="L244">                        JPanel rowPanel = createBillRow(bill);</span>
+<span class="nc" id="L245">                        listPanel.add(rowPanel);</span>
+<span class="nc" id="L246">                        listPanel.add(Box.createVerticalStrut(2));</span>
+<span class="nc" id="L247">                    });</span>
+        }
+
+        // 关键：用一个 PAGE_START 包装，保证内容总是贴顶显示（即使不足一屏/只有一条）
+<span class="nc" id="L251">        JPanel listWrapper = new JPanel(new BorderLayout());</span>
+<span class="nc" id="L252">        listWrapper.setBackground(Color.WHITE);</span>
+<span class="nc" id="L253">        listWrapper.add(listPanel, BorderLayout.PAGE_START);</span>
+
+<span class="nc" id="L255">        JScrollPane scrollPane = new JScrollPane(listWrapper);</span>
+<span class="nc" id="L256">        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);</span>
+<span class="nc" id="L257">        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);</span>
+<span class="nc" id="L258">        scrollPane.setBorder(null);</span>
+
+        // 初始/刷新时强制视图从顶部开始
+<span class="nc" id="L261">        SwingUtilities.invokeLater(() -&gt; {</span>
+<span class="nc" id="L262">            scrollPane.getVerticalScrollBar().setValue(0);</span>
+<span class="nc" id="L263">            scrollPane.getViewport().setViewPosition(new Point(0, 0));</span>
+<span class="nc" id="L264">        });</span>
+
+<span class="nc" id="L266">        panel.add(scrollPane, BorderLayout.CENTER);</span>
+<span class="nc" id="L267">        return panel;</span>
+    }
+
+    private JPanel createBillRow(BillSingleResponse bill) {
+<span class="nc" id="L271">        JPanel rowPanel = new JPanel(new GridLayout(1, 6));</span>
+<span class="nc" id="L272">        rowPanel.setPreferredSize(new Dimension(0, 60));</span>
+<span class="nc" id="L273">        rowPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L274">        rowPanel.setBackground(Color.WHITE);</span>
+
+<span class="nc" id="L276">        JLabel timeLabel = new JLabel(bill.getBillTime(), SwingConstants.CENTER);</span>
+<span class="nc" id="L277">        timeLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, currentFontSize));</span>
+<span class="nc" id="L278">        timeLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L279">        rowPanel.add(timeLabel);</span>
+
+<span class="nc bnc" id="L281" title="All 2 branches missed.">        String typeText = bill.getType() == -1 ? &quot;支出&quot; : &quot;收入&quot;;</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">        Color typeColor = bill.getType() == -1 ? Color.RED : new Color(0, 150, 0);</span>
+<span class="nc" id="L283">        JLabel typeLabel = new JLabel(typeText, SwingConstants.CENTER);</span>
+<span class="nc" id="L284">        typeLabel.setForeground(typeColor);</span>
+<span class="nc" id="L285">        typeLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, currentFontSize));</span>
+<span class="nc" id="L286">        typeLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L287">        rowPanel.add(typeLabel);</span>
+
+        // 类型：大类「具体类型」
+<span class="nc" id="L290">        String categoryName = &quot;未知类型&quot;;</span>
+<span class="nc" id="L291">        CategorySingleResponse category = mainPage.getCategoryMap().get(bill.getCategoryId());</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">        if (category != null) categoryName = category.getName();</span>
+
+<span class="nc" id="L294">        String specificName = &quot;无&quot;;</span>
+<span class="nc" id="L295">        SpecificTypeSingleResponse specific = mainPage.getSpecificTypeMap().get(bill.getSpecificTypeId());</span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">        if (specific != null) specificName = specific.getName();</span>
+
+<span class="nc" id="L298">        String displayType = categoryName + &quot; 「&quot; + specificName + &quot;」&quot;;</span>
+<span class="nc" id="L299">        JLabel categoryLabel = new JLabel(displayType, SwingConstants.CENTER);</span>
+<span class="nc" id="L300">        categoryLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, currentFontSize));</span>
+<span class="nc" id="L301">        categoryLabel.setToolTipText(displayType);</span>
+<span class="nc" id="L302">        categoryLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L303">        rowPanel.add(categoryLabel);</span>
+
+<span class="nc" id="L305">        JLabel amountLabel = new JLabel(decimalFormat.format(bill.getAmount()) + &quot; 元&quot;, SwingConstants.CENTER);</span>
+<span class="nc" id="L306">        amountLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, currentFontSize));</span>
+<span class="nc" id="L307">        amountLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L308">        rowPanel.add(amountLabel);</span>
+
+<span class="nc bnc" id="L310" title="All 2 branches missed.">        String remark = bill.getRemark() != null ? bill.getRemark() : &quot;无&quot;;</span>
+<span class="nc" id="L311">        JLabel remarkLabel = new JLabel(remark, SwingConstants.CENTER);</span>
+<span class="nc" id="L312">        remarkLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, currentFontSize));</span>
+<span class="nc" id="L313">        remarkLabel.setToolTipText(remark);</span>
+<span class="nc" id="L314">        remarkLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L315">        rowPanel.add(remarkLabel);</span>
+
+<span class="nc" id="L317">        JPanel actionPanel = new JPanel();</span>
+<span class="nc" id="L318">        actionPanel.setLayout(new BoxLayout(actionPanel, BoxLayout.X_AXIS));</span>
+<span class="nc" id="L319">        actionPanel.setBackground(Color.WHITE);</span>
+<span class="nc" id="L320">        actionPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+
+<span class="nc" id="L322">        JButton detailBtn = new JButton(&quot;详情&quot;);</span>
+<span class="nc" id="L323">        styleActionButton(detailBtn, Color.BLUE, currentFontSize + 1);</span>
+<span class="nc" id="L324">        detailBtn.addActionListener(e -&gt; showBillDetail(bill));</span>
+<span class="nc" id="L325">        actionPanel.add(detailBtn);</span>
+<span class="nc" id="L326">        actionPanel.add(Box.createHorizontalStrut(10));</span>
+
+<span class="nc" id="L328">        JButton editBtn = new JButton(&quot;修改&quot;);</span>
+<span class="nc" id="L329">        styleActionButton(editBtn, Color.BLUE, currentFontSize + 1);</span>
+<span class="nc" id="L330">        editBtn.addActionListener(e -&gt; showEditDialog(bill));</span>
+<span class="nc" id="L331">        actionPanel.add(editBtn);</span>
+<span class="nc" id="L332">        actionPanel.add(Box.createHorizontalStrut(10));</span>
+
+<span class="nc" id="L334">        JButton deleteBtn = new JButton(&quot;删除&quot;);</span>
+<span class="nc" id="L335">        styleActionButton(deleteBtn, Color.RED, currentFontSize + 1);</span>
+<span class="nc" id="L336">        deleteBtn.addActionListener(e -&gt; deleteBill(bill, rowPanel));</span>
+<span class="nc" id="L337">        actionPanel.add(deleteBtn);</span>
+
+<span class="nc" id="L339">        actionPanel.add(Box.createHorizontalGlue());</span>
+<span class="nc" id="L340">        rowPanel.add(actionPanel);</span>
+
+<span class="nc" id="L342">        return rowPanel;</span>
+    }
+
+    private void styleActionButton(JButton btn, Color borderColor, int fontSize) {
+<span class="nc" id="L346">        btn.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, fontSize));</span>
+<span class="nc" id="L347">        btn.setForeground(borderColor);</span>
+<span class="nc" id="L348">        btn.setBorderPainted(true);</span>
+<span class="nc" id="L349">        btn.setBorder(BorderFactory.createLineBorder(borderColor, 2));</span>
+<span class="nc" id="L350">        btn.setContentAreaFilled(true);</span>
+<span class="nc" id="L351">        btn.setBackground(new Color(245, 245, 245));</span>
+<span class="nc" id="L352">        btn.setFocusPainted(false);</span>
+<span class="nc" id="L353">        btn.setPreferredSize(new Dimension(90, 35));</span>
+
+<span class="nc" id="L355">        btn.addMouseListener(new MouseAdapter() {</span>
+<span class="nc" id="L356">            @Override public void mouseEntered(MouseEvent e) { btn.setBackground(new Color(230,230,230)); }</span>
+<span class="nc" id="L357">            @Override public void mouseExited(MouseEvent e) { btn.setBackground(new Color(245,245,245)); }</span>
+        });
+<span class="nc" id="L359">    }</span>
+
+    private void showBillDetail(BillSingleResponse bill) {
+<span class="nc" id="L362">        JTextArea textArea = new JTextArea(bill.getFormattedString());</span>
+<span class="nc" id="L363">        textArea.setEditable(false);</span>
+<span class="nc" id="L364">        textArea.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, 14));</span>
+<span class="nc" id="L365">        JScrollPane scrollPane = new JScrollPane(textArea);</span>
+<span class="nc" id="L366">        scrollPane.setPreferredSize(new Dimension(400, 300));</span>
+<span class="nc" id="L367">        JOptionPane.showMessageDialog(</span>
+                null,
+                scrollPane,
+<span class="nc" id="L370">                &quot;账单详情（ID：&quot; + bill.getBillId() + &quot;）&quot;,</span>
+                JOptionPane.INFORMATION_MESSAGE
+        );
+<span class="nc" id="L373">    }</span>
+
+    private void showEditDialog(BillSingleResponse bill) {
+<span class="nc" id="L376">        BillEditDialog editDialog = new BillEditDialog(mainPage, bill);</span>
+<span class="nc" id="L377">        editDialog.setVisible(true);</span>
+<span class="nc" id="L378">    }</span>
+
+    private void deleteBill(BillSingleResponse bill, JPanel rowPanel) {
+<span class="nc" id="L381">        int confirm = JOptionPane.showConfirmDialog(</span>
+                null,
+<span class="nc" id="L383">                &quot;确定要删除账单 ID：&quot; + bill.getBillId() + &quot; 吗？&quot;,</span>
+                &quot;确认删除&quot;,
+                JOptionPane.YES_NO_OPTION
+        );
+<span class="nc bnc" id="L387" title="All 2 branches missed.">        if (confirm != JOptionPane.YES_OPTION) return;</span>
+
+        try {
+<span class="nc" id="L390">            mainPage.getBillHelper().deleteBill(bill.getBillId());</span>
+<span class="nc" id="L391">            mainPage.deleteBill(bill.getBillId());</span>
+
+<span class="nc bnc" id="L393" title="All 2 branches missed.">            if (currentContentPanel != null) {</span>
+                // 这里会再次触发 draw，但前提是当前页标记仍为 HOME
+<span class="nc" id="L395">                draw(currentContentPanel);</span>
+            }
+
+<span class="nc" id="L398">            JOptionPane.showMessageDialog(null, &quot;删除成功！&quot;);</span>
+<span class="nc" id="L399">        } catch (Exception e) {</span>
+<span class="nc" id="L400">            JOptionPane.showMessageDialog(null, &quot;删除失败：&quot; + e.getMessage(), &quot;错误&quot;, JOptionPane.ERROR_MESSAGE);</span>
+<span class="nc" id="L401">        }</span>
+<span class="nc" id="L402">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

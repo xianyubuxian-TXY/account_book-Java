@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchSpecificTypeService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.backend.service.impl.specific_type</a> &gt; <span class="el_source">SearchSpecificTypeService.java</span></div><h1>SearchSpecificTypeService.java</h1><pre class="source lang-java linenums">package com.accountbook.backend.service.impl.specific_type;
+
+import com.accountbook.backend.common.util.SpecificTypeConvertUtils; // 假设存在具体类型转换工具类
+import com.accountbook.backend.service.BusinessService;
+import com.accountbook.backend.storage.dao.SpecificTypeDAO;
+import com.accountbook.backend.storage.dao.factory.DAOFactory;
+import com.accountbook.backend.storage.entity.SpecificType;
+import com.accountbook.proxy.request.specific_type.SpecificTypeSearchParams;
+import com.accountbook.proxy.response.specific_type.SpecificTypeListResponse;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 具体类型查询业务实现类（参考SearchBillService、SearchCategoryService设计风格）
+ */
+<span class="nc" id="L18">public class SearchSpecificTypeService implements BusinessService&lt;SpecificTypeSearchParams, SpecificTypeListResponse&gt; {</span>
+
+    // 注入具体类型DAO（通过工厂获取，与其他查询服务保持一致）
+<span class="nc" id="L21">    private final SpecificTypeDAO specificTypeDAO = DAOFactory.getSpecificTypeDAO();</span>
+
+    @Override
+    public SpecificTypeListResponse execute(SpecificTypeSearchParams params) throws Exception {
+<span class="nc" id="L25">        System.out.println(&quot;执行具体类型查询业务&quot;);</span>
+
+        // 处理参数为空的情况（直接查询所有并按ID正序）
+<span class="nc bnc" id="L28" title="All 4 branches missed.">        if (params == null || isAllParamsNull(params)) {</span>
+<span class="nc" id="L29">            System.out.println(&quot;无有效查询条件，默认返回所有具体类型（按ID由小到大）&quot;);</span>
+<span class="nc" id="L30">            List&lt;SpecificType&gt; allSpecificTypes = specificTypeDAO.queryAllSpecificTypesOrderByIdAsc();</span>
+<span class="nc" id="L31">            return SpecificTypeListResponse.fromSpecificTypeList(allSpecificTypes);</span>
+        }
+
+        // 1. 将查询参数转为 Map
+<span class="nc" id="L35">        Map&lt;String, Object&gt; paramMap = params.toMap();</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">        if (paramMap.isEmpty()) {</span>
+            // 所有参数均为null（但params不为null），默认返回所有具体类型
+<span class="nc" id="L38">            System.out.println(&quot;所有查询条件均为null，默认返回所有具体类型（按ID由小到大）&quot;);</span>
+<span class="nc" id="L39">            List&lt;SpecificType&gt; allSpecificTypes = specificTypeDAO.queryAllSpecificTypesOrderByIdAsc();</span>
+<span class="nc" id="L40">            return SpecificTypeListResponse.fromSpecificTypeList(allSpecificTypes);</span>
+        }
+
+        // 2. 动态拼接 SQL 条件和参数列表
+<span class="nc" id="L44">        StringBuilder condition = new StringBuilder();</span>
+<span class="nc" id="L45">        List&lt;Object&gt; sqlParams = new ArrayList&lt;&gt;();</span>
+
+        // 遍历 Map 生成 AND 连接的条件（对应SpecificTypeSearchParams的toMap字段）
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        for (Map.Entry&lt;String, Object&gt; entry : paramMap.entrySet()) {</span>
+<span class="nc" id="L49">            String key = entry.getKey();</span>
+<span class="nc" id="L50">            Object value = entry.getValue();</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">            if (value == null) {</span>
+<span class="nc" id="L52">                continue; // 跳过 null 值条件</span>
+            }
+
+            // 根据字段类型拼接条件
+<span class="nc bnc" id="L56" title="All 4 branches missed.">            switch (key) {</span>
+                case &quot;id&quot;:
+                    // 具体类型ID：精确匹配
+<span class="nc" id="L59">                    condition.append(&quot;id = ? AND &quot;);</span>
+<span class="nc" id="L60">                    sqlParams.add(value);</span>
+<span class="nc" id="L61">                    break;</span>
+                case &quot;name_like&quot;:
+                    // 名称关键字：模糊查询（前后加%）
+<span class="nc" id="L64">                    condition.append(&quot;name LIKE CONCAT('%', ?, '%') AND &quot;);</span>
+<span class="nc" id="L65">                    sqlParams.add(value);</span>
+<span class="nc" id="L66">                    break;</span>
+                case &quot;category_id&quot;:
+                    // 关联大类ID：精确匹配（查询某大类下的具体类型）
+<span class="nc" id="L69">                    condition.append(&quot;category_id = ? AND &quot;);</span>
+<span class="nc" id="L70">                    sqlParams.add(value);</span>
+<span class="nc" id="L71">                    break;</span>
+                default:
+                    // 忽略未知字段
+                    break;
+            }
+<span class="nc" id="L76">        }</span>
+
+        // 3. 处理条件字符串（移除末尾多余的 &quot;AND &quot;）
+<span class="nc" id="L79">        String finalCondition = &quot;&quot;;</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (condition.length() &gt; 0) {</span>
+<span class="nc" id="L81">            finalCondition = condition.substring(0, condition.length() - 4);</span>
+        } else {
+            // 理论上不会走到这里，因paramMap非空且已过滤null
+<span class="nc" id="L84">            System.out.println(&quot;条件处理后为空，默认返回所有具体类型（按ID由小到大）&quot;);</span>
+<span class="nc" id="L85">            List&lt;SpecificType&gt; allSpecificTypes = specificTypeDAO.queryAllSpecificTypesOrderByIdAsc();</span>
+<span class="nc" id="L86">            return SpecificTypeListResponse.fromSpecificTypeList(allSpecificTypes);</span>
+        }
+
+        // 4. 调用 DAO 查询完整字段（字段参数传 &quot;*&quot;）
+<span class="nc" id="L90">        List&lt;Map&lt;String, Object&gt;&gt; mapList = specificTypeDAO.querySpecificTypes(&quot;*&quot;, finalCondition, sqlParams.toArray());</span>
+
+        // 5. 将 Map 列表转为 SpecificType 实体列表（复用转换工具类）
+<span class="nc" id="L93">        List&lt;SpecificType&gt; specificTypeList = SpecificTypeConvertUtils.mapListToSpecificTypeList(mapList);</span>
+
+        // 6. 将实体列表转为 SpecificTypeListResponse
+<span class="nc" id="L96">        return SpecificTypeListResponse.fromSpecificTypeList(specificTypeList);</span>
+    }
+
+    /**
+     * 判断查询参数是否全为null（辅助方法）
+     * @param params 具体类型查询参数对象
+     * @return true=所有参数都为null；false=存在非null参数
+     */
+    private boolean isAllParamsNull(SpecificTypeSearchParams params) {
+        // 检查具体类型查询的核心字段是否全为null
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        return params.getSpecificTypeId() == null &amp;&amp;</span>
+<span class="nc bnc" id="L107" title="All 4 branches missed.">               (params.getNameKey() == null || params.getNameKey().trim().isEmpty()) &amp;&amp;</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">               params.getCategoryId() == null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

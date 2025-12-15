@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SpecificTypeRequestHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.proxy.helper.impl</a> &gt; <span class="el_source">SpecificTypeRequestHelper.java</span></div><h1>SpecificTypeRequestHelper.java</h1><pre class="source lang-java linenums">package com.accountbook.proxy.helper.impl;
+
+import com.accountbook.proxy.FrontendRequest;
+import com.accountbook.proxy.FrontendRequest.RequestType;
+import com.accountbook.proxy.helper.BaseRequestHelper;
+import com.accountbook.proxy.request.specific_type.SpecificTypeAddParams;
+import com.accountbook.proxy.request.specific_type.SpecificTypeChangeParams;
+import com.accountbook.proxy.request.specific_type.SpecificTypeDeleteParams;
+import com.accountbook.proxy.request.specific_type.SpecificTypeSearchParams;
+import com.accountbook.proxy.response.specific_type.SpecificTypeDeleteResponse;
+import com.accountbook.proxy.response.specific_type.SpecificTypeListResponse;
+import com.accountbook.proxy.response.specific_type.SpecificTypeSingleResponse;
+
+import java.util.List;
+
+/**
+ * 具体类型请求助手：封装具体类型（隶属于大类）的请求处理，与其他业务助手保持一致设计风格
+ */
+<span class="nc" id="L19">public class SpecificTypeRequestHelper extends BaseRequestHelper {</span>
+
+    /**
+     * 新增具体类型：返回新增的具体类型详情
+     * 业务规则：同一大类下的具体类型名称不可重复，名称长度≤20字符
+     */
+    public SpecificTypeSingleResponse addSpecificType(String name, Integer categoryId) {
+        // 基础参数校验
+<span class="nc" id="L27">        validateParamNotNull(name, &quot;具体类型名称不能为空&quot;);</span>
+<span class="nc" id="L28">        String trimmedName = name.trim();</span>
+<span class="nc" id="L29">        validateParamNotNull(categoryId, &quot;关联的大类ID不能为空&quot;);</span>
+        
+        // 格式与合法性校验
+<span class="nc bnc" id="L32" title="All 2 branches missed.">        validateParamTrue(!trimmedName.isEmpty(), &quot;具体类型名称不能为空白字符&quot;);</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        validateParamTrue(trimmedName.length() &lt;= 20, </span>
+<span class="nc" id="L34">                &quot;具体类型名称过长（最大20字符，当前：&quot; + trimmedName.length() + &quot;）&quot;);</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">        validateParamTrue(categoryId &gt; 0, &quot;关联的大类ID必须为正整数（当前值：&quot; + categoryId + &quot;）&quot;);</span>
+        
+        // 唯一性校验：同一大类下不可有同名具体类型
+<span class="nc" id="L38">        SpecificTypeListResponse existing = searchSpecificType(trimmedName, categoryId);</span>
+<span class="nc bnc" id="L39" title="All 4 branches missed.">        if (existing.getItems() != null &amp;&amp; !existing.getItems().isEmpty()) {</span>
+<span class="nc" id="L40">            throw new RuntimeException(&quot;大类ID=&quot; + categoryId + &quot;下已存在'&quot; + trimmedName + &quot;'，不可重复添加&quot;);</span>
+        }
+
+        // 发送新增请求
+<span class="nc" id="L44">        SpecificTypeAddParams params = new SpecificTypeAddParams(trimmedName, categoryId);</span>
+<span class="nc" id="L45">        FrontendRequest&lt;SpecificTypeAddParams&gt; request = new FrontendRequest&lt;&gt;(RequestType.ADD_SPECIFIC_TYPE, params);</span>
+<span class="nc" id="L46">        return parseResponse(sendRequest(request));</span>
+    }
+
+    /**
+     * 修改具体类型：返回修改后的具体类型详情（统一命名为update，与其他助手类保持一致）
+     */
+    public SpecificTypeSingleResponse updateSpecificType(
+            Integer specificTypeId, String newName, Integer newCategoryId) {
+        // 基础标识校验
+<span class="nc" id="L55">        validateParamNotNull(specificTypeId, &quot;具体类型ID不能为空&quot;);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        validateParamTrue(specificTypeId &gt; 0, &quot;具体类型ID必须为正整数（当前值：&quot; + specificTypeId + &quot;）&quot;);</span>
+        
+        // 校验：至少修改一个有效字段
+<span class="nc bnc" id="L59" title="All 6 branches missed.">        boolean hasValidUpdate = (newName != null &amp;&amp; !newName.trim().isEmpty()) </span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">                || (newCategoryId != null &amp;&amp; newCategoryId &gt; 0);</span>
+<span class="nc" id="L61">        validateParamTrue(hasValidUpdate, &quot;至少需要修改一个有效字段（名称或大类ID）&quot;);</span>
+        
+        // 获取原具体类型信息（用于后续校验）
+<span class="nc" id="L64">        SpecificTypeSingleResponse original = searchSpecificTypeById(specificTypeId);</span>
+<span class="nc" id="L65">        Integer originalCategoryId = original.getCategoryId();</span>
+<span class="nc" id="L66">        String originalName = original.getName();</span>
+        
+        // 处理新名称（若有）
+<span class="nc" id="L69">        String trimmedNewName = null;</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (newName != null) {</span>
+<span class="nc" id="L71">            trimmedNewName = newName.trim();</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">            validateParamTrue(!trimmedNewName.isEmpty(), &quot;新具体类型名称不能为空白字符&quot;);</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">            validateParamTrue(trimmedNewName.length() &lt;= 20, </span>
+<span class="nc" id="L74">                    &quot;新名称过长（最大20字符，当前：&quot; + trimmedNewName.length() + &quot;）&quot;);</span>
+            
+            // 校验：新名称与原名称是否一致（避免无效修改）
+<span class="nc bnc" id="L77" title="All 6 branches missed.">            if (trimmedNewName.equals(originalName) &amp;&amp; (newCategoryId == null || newCategoryId.equals(originalCategoryId))) {</span>
+<span class="nc" id="L78">                throw new RuntimeException(&quot;新名称和大类ID与原数据一致，无需修改&quot;);</span>
+            }
+        }
+        
+        // 处理新大类ID（若有）
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        Integer targetCategoryId = (newCategoryId != null) ? newCategoryId : originalCategoryId;</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        validateParamTrue(targetCategoryId &gt; 0, &quot;新关联的大类ID必须为正整数（当前值：&quot; + targetCategoryId + &quot;）&quot;);</span>
+        
+        // 唯一性校验：新名称在目标大类下是否已存在（排除自身）
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        if (trimmedNewName != null) {</span>
+<span class="nc" id="L88">            SpecificTypeListResponse existing = searchSpecificType(trimmedNewName, targetCategoryId);</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">            if (existing.getItems() != null) {</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">                for (SpecificTypeSingleResponse type : existing.getItems()) {</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">                    if (!type.getSpecificTypeId().equals(specificTypeId)) { // 排除自身</span>
+<span class="nc" id="L92">                        throw new RuntimeException(&quot;大类ID=&quot; + targetCategoryId + &quot;下已存在'&quot; + trimmedNewName + &quot;'&quot;);</span>
+                    }
+<span class="nc" id="L94">                }</span>
+            }
+        }
+
+        // 发送修改请求
+<span class="nc" id="L99">        SpecificTypeChangeParams params = new SpecificTypeChangeParams(specificTypeId, trimmedNewName, newCategoryId);</span>
+<span class="nc" id="L100">        FrontendRequest&lt;SpecificTypeChangeParams&gt; request = new FrontendRequest&lt;&gt;(RequestType.CHANGE_SPECIFIC_TYPE, params);</span>
+<span class="nc" id="L101">        return parseResponse(sendRequest(request));</span>
+    }
+
+    /**
+     * 删除具体类型：返回被删除的具体类型信息
+     * 业务规则：系统默认具体类型（ID=1）不可删除；存在关联账单时需先处理
+     */
+    public SpecificTypeDeleteResponse deleteSpecificType(Integer specificTypeId) {
+        // 基础标识校验
+<span class="nc" id="L110">        validateParamNotNull(specificTypeId, &quot;具体类型ID不能为空&quot;);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        validateParamTrue(specificTypeId &gt; 0, &quot;具体类型ID必须为正整数（当前值：&quot; + specificTypeId + &quot;）&quot;);</span>
+        
+        // 系统保护：默认具体类型不可删除
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        if (specificTypeId == 1) {</span>
+<span class="nc" id="L115">            throw new RuntimeException(&quot;系统默认具体类型（ID=1）不可删除&quot;);</span>
+        }
+
+        // TODO：实际业务中需添加关联校验（示例）
+        // 1. 检查是否有关联的账单（通过BillRequestHelper查询）
+        // 若存在关联数据，需提示：&quot;该具体类型存在XX条关联账单，请先迁移或删除关联数据&quot;
+
+        // 发送删除请求
+<span class="nc" id="L123">        SpecificTypeDeleteParams params = new SpecificTypeDeleteParams(specificTypeId);</span>
+<span class="nc" id="L124">        FrontendRequest&lt;SpecificTypeDeleteParams&gt; request = new FrontendRequest&lt;&gt;(RequestType.DELETE_SPECIFIC_TYPE, params);</span>
+<span class="nc" id="L125">        return parseResponse(sendRequest(request));</span>
+    }
+
+    /**
+     * 搜索具体类型：支持按名称关键字+大类ID组合查询（同一大类下的模糊匹配）
+     */
+    public SpecificTypeListResponse searchSpecificType(String nameKey, Integer categoryId) {
+        // 可选参数格式校验
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (categoryId != null) {</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">            validateParamTrue(categoryId &gt; 0, &quot;大类ID必须为正整数（当前值：&quot; + categoryId + &quot;）&quot;);</span>
+        }
+
+<span class="nc" id="L137">        SpecificTypeSearchParams params = new SpecificTypeSearchParams(null, nameKey, categoryId);</span>
+<span class="nc" id="L138">        FrontendRequest&lt;SpecificTypeSearchParams&gt; request = new FrontendRequest&lt;&gt;(RequestType.SEARCH_SPECIFIC_TYPE, params);</span>
+<span class="nc" id="L139">        return parseResponse(sendRequest(request));</span>
+    }
+
+    /**
+     * 按ID查询具体类型详情
+     */
+    public SpecificTypeSingleResponse searchSpecificTypeById(Integer specificTypeId) {
+<span class="nc" id="L146">        validateParamNotNull(specificTypeId, &quot;具体类型ID不能为空&quot;);</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        validateParamTrue(specificTypeId &gt; 0, &quot;具体类型ID必须为正整数（当前值：&quot; + specificTypeId + &quot;）&quot;);</span>
+
+<span class="nc" id="L149">        SpecificTypeSearchParams params = new SpecificTypeSearchParams(specificTypeId);</span>
+<span class="nc" id="L150">        FrontendRequest&lt;SpecificTypeSearchParams&gt; request = new FrontendRequest&lt;&gt;(RequestType.SEARCH_SPECIFIC_TYPE, params);</span>
+<span class="nc" id="L151">        SpecificTypeListResponse listResponse = parseResponse(sendRequest(request));</span>
+
+<span class="nc" id="L153">        List&lt;SpecificTypeSingleResponse&gt; specificTypes = listResponse.getItems();</span>
+<span class="nc bnc" id="L154" title="All 4 branches missed.">        if (specificTypes == null || specificTypes.isEmpty()) {</span>
+<span class="nc" id="L155">            throw new RuntimeException(&quot;未找到ID为&quot; + specificTypeId + &quot;的具体类型&quot;);</span>
+        }
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        if (specificTypes.size() &gt; 1) {</span>
+<span class="nc" id="L158">            throw new RuntimeException(&quot;查询异常：ID为&quot; + specificTypeId + &quot;的具体类型存在&quot; + specificTypes.size() + &quot;条记录&quot;);</span>
+        }
+
+<span class="nc" id="L161">        return specificTypes.get(0);</span>
+    }
+
+    /**
+     * 查询所有具体类型（按大类ID+名称正序排列）
+     */
+    public SpecificTypeListResponse searchAllSpecificTypes() {
+<span class="nc" id="L168">        SpecificTypeSearchParams emptyParams = new SpecificTypeSearchParams();</span>
+<span class="nc" id="L169">        FrontendRequest&lt;SpecificTypeSearchParams&gt; request = new FrontendRequest&lt;&gt;(RequestType.SEARCH_SPECIFIC_TYPE, emptyParams);</span>
+<span class="nc" id="L170">        return parseResponse(sendRequest(request));</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DeleteSpecificTypeService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.backend.service.impl.specific_type</a> &gt; <span class="el_source">DeleteSpecificTypeService.java</span></div><h1>DeleteSpecificTypeService.java</h1><pre class="source lang-java linenums">package com.accountbook.backend.service.impl.specific_type;
+
+import com.accountbook.backend.common.exception.BusinessServiceException;
+import com.accountbook.backend.service.BusinessService;
+import com.accountbook.backend.storage.dao.BillDAO;
+import com.accountbook.backend.storage.dao.SpecificTypeDAO;
+import com.accountbook.backend.storage.dao.factory.DAOFactory;
+import com.accountbook.backend.storage.entity.SpecificType;
+import com.accountbook.proxy.request.specific_type.SpecificTypeDeleteParams;
+import com.accountbook.proxy.response.specific_type.SpecificTypeDeleteResponse;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 删除具体类型服务实现
+ * 逻辑：查待删具体类型(拿到所属分类) → 确保该分类下存在“无”具体类型(没有则创建)
+ *     → 先把该具体类型下所有账单的 specific_type_id 改为“无”
+ *     → 再删除该具体类型
+ * 注意：不修改 category_id，不影响 budget
+ */
+<span class="nc" id="L23">public class DeleteSpecificTypeService implements BusinessService&lt;SpecificTypeDeleteParams, SpecificTypeDeleteResponse&gt; {</span>
+
+<span class="nc" id="L25">    private final SpecificTypeDAO specificTypeDAO = DAOFactory.getSpecificTypeDAO();</span>
+<span class="nc" id="L26">    private final BillDAO billDAO = DAOFactory.getBillDAO();</span>
+
+    private static final String DEFAULT_SPEC_NAME = &quot;无&quot;;
+
+    @Override
+    public SpecificTypeDeleteResponse execute(SpecificTypeDeleteParams params) throws Exception {
+<span class="nc" id="L32">        System.out.println(&quot;执行删除具体类型服务（先把账单具体类型改为“无”）&quot;);</span>
+
+        // 1) 取参数并做基本校验
+<span class="nc" id="L35">        Integer specificTypeId = params.getId();</span>
+<span class="nc bnc" id="L36" title="All 4 branches missed.">        if (specificTypeId == null || specificTypeId &lt;= 0) {</span>
+<span class="nc" id="L37">            throw new BusinessServiceException(&quot;删除具体类型失败：无效的ID=&quot; + specificTypeId);</span>
+        }
+
+        // 2) 查询该具体类型，拿到所属分类ID与名称
+<span class="nc" id="L41">        SpecificType toDelete = specificTypeDAO.querySpecificTypeById(specificTypeId);</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        if (toDelete == null) {</span>
+<span class="nc" id="L43">            throw new BusinessServiceException(&quot;删除具体类型失败：未找到ID=&quot; + specificTypeId);</span>
+        }
+        // 可选保护：避免把“无”本体删了
+<span class="nc bnc" id="L46" title="All 2 branches missed.">        if (DEFAULT_SPEC_NAME.equals(toDelete.getName())) {</span>
+<span class="nc" id="L47">            throw new BusinessServiceException(&quot;删除具体类型失败：默认类型“无”不可删除&quot;);</span>
+        }
+<span class="nc" id="L49">        Integer categoryId = toDelete.getCategoryId();</span>
+
+        // 3) 在同一分类下查找名为“无”的具体类型；没有就创建一条
+<span class="nc" id="L52">        Integer defaultSpecificTypeId = null;</span>
+<span class="nc" id="L53">        List&lt;SpecificType&gt; list = specificTypeDAO.querySpecificTypesByCategoryId(categoryId);</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (list != null) {</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">            for (SpecificType st : list) {</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">                if (DEFAULT_SPEC_NAME.equals(st.getName())) {</span>
+<span class="nc" id="L57">                    defaultSpecificTypeId = st.getId();</span>
+<span class="nc" id="L58">                    break;</span>
+                }
+<span class="nc" id="L60">            }</span>
+        }
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (defaultSpecificTypeId == null) {</span>
+<span class="nc" id="L63">            Map&lt;String, Object&gt; insert = new HashMap&lt;&gt;();</span>
+            // 这里使用数据库字段名
+<span class="nc" id="L65">            insert.put(&quot;name&quot;, DEFAULT_SPEC_NAME);</span>
+<span class="nc" id="L66">            insert.put(&quot;category_id&quot;, categoryId);</span>
+<span class="nc" id="L67">            int newId = specificTypeDAO.addSpecificType(insert);</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            if (newId &lt;= 0) {</span>
+<span class="nc" id="L69">                throw new BusinessServiceException(&quot;删除具体类型失败：创建默认具体类型“无”失败&quot;);</span>
+            }
+<span class="nc" id="L71">            defaultSpecificTypeId = newId;</span>
+        }
+
+        // 4) 先迁移账单的具体类型到“无”
+<span class="nc" id="L75">        Map&lt;String, Object&gt; queryMap = new HashMap&lt;&gt;();</span>
+        // BillDAO 里使用 Java 属性名（会自动映射到 specific_type_id）
+<span class="nc" id="L77">        queryMap.put(&quot;specificTypeId&quot;, specificTypeId);</span>
+
+<span class="nc" id="L79">        Map&lt;String, Object&gt; updateMap = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L80">        updateMap.put(&quot;specificTypeId&quot;, defaultSpecificTypeId);</span>
+
+<span class="nc" id="L82">        int affectedBills = billDAO.updateBillsByCondition(queryMap, updateMap);</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        if (affectedBills &lt; 0) {</span>
+<span class="nc" id="L84">            throw new BusinessServiceException(&quot;删除具体类型失败：迁移账单具体类型时发生异常&quot;);</span>
+        }
+        // affectedBills==0 说明本就没有账单指向该具体类型，属正常情况
+
+        // 5) 再删除该具体类型
+<span class="nc" id="L89">        int affectRows = specificTypeDAO.deleteSpecificTypeById(specificTypeId);</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (affectRows &lt;= 0) {</span>
+<span class="nc" id="L91">            throw new BusinessServiceException(&quot;删除具体类型失败：ID=&quot; + specificTypeId + &quot; 不存在或已被删除&quot;);</span>
+        }
+
+        // 6) 返回响应：含被删具体类型ID与其所属分类ID（不影响分类与预算）
+<span class="nc" id="L95">        return new SpecificTypeDeleteResponse(specificTypeId, categoryId);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

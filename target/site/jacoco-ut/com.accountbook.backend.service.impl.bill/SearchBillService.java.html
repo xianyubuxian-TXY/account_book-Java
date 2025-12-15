@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchBillService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.backend.service.impl.bill</a> &gt; <span class="el_source">SearchBillService.java</span></div><h1>SearchBillService.java</h1><pre class="source lang-java linenums">package com.accountbook.backend.service.impl.bill;
+
+import com.accountbook.backend.common.util.BillConvertUtils;
+import com.accountbook.backend.service.BusinessService;
+import com.accountbook.backend.storage.dao.BillDAO;
+import com.accountbook.backend.storage.dao.factory.DAOFactory;
+import com.accountbook.backend.storage.entity.Bill;
+import com.accountbook.proxy.request.bill.BillSearchParams;
+import com.accountbook.proxy.response.bill.BillListResponse;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+<span class="nc" id="L15">public class SearchBillService implements BusinessService&lt;BillSearchParams, BillListResponse&gt; {</span>
+<span class="nc" id="L16">    private final BillDAO billDAO = DAOFactory.getBillDAO();</span>
+
+    @Override
+    public BillListResponse execute(BillSearchParams params) throws Exception {
+<span class="nc" id="L20">        System.out.println(&quot;执行账单查询业务&quot;);</span>
+
+        // 处理参数为空的情况（直接查询所有并按时间倒序）
+<span class="nc bnc" id="L23" title="All 4 branches missed.">        if (params == null || isAllParamsNull(params)) {</span>
+<span class="nc" id="L24">            System.out.println(&quot;无有效查询条件，默认返回所有账单（按时间由近到远）&quot;);</span>
+<span class="nc" id="L25">            List&lt;Bill&gt; allBills = billDAO.queryAllBillsOrderByTimeDesc();</span>
+<span class="nc" id="L26">            return BillListResponse.fromBillList(allBills);</span>
+        }
+
+        // 1. 将查询参数转为 Map
+<span class="nc" id="L30">        Map&lt;String, Object&gt; paramMap = params.toMap();</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        if (paramMap.isEmpty()) {</span>
+<span class="nc" id="L32">            System.out.println(&quot;参数转换后为空，默认返回所有账单（按时间由近到远）&quot;);</span>
+<span class="nc" id="L33">            List&lt;Bill&gt; allBills = billDAO.queryAllBillsOrderByTimeDesc();</span>
+<span class="nc" id="L34">            return BillListResponse.fromBillList(allBills);</span>
+        }
+
+        // 2. 动态拼接 SQL 条件和参数列表（重点修复：添加bill_id处理）
+<span class="nc" id="L38">        StringBuilder condition = new StringBuilder();</span>
+<span class="nc" id="L39">        List&lt;Object&gt; sqlParams = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        for (Map.Entry&lt;String, Object&gt; entry : paramMap.entrySet()) {</span>
+<span class="nc" id="L42">            String key = entry.getKey();</span>
+<span class="nc" id="L43">            Object value = entry.getValue();</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">            if (value == null) {</span>
+<span class="nc" id="L45">                continue;</span>
+            }
+
+            // 重点修复：添加对bill_id的处理
+<span class="nc bnc" id="L49" title="All 10 branches missed.">            switch (key) {</span>
+                case &quot;id&quot;:  // 处理按ID查询的条件
+<span class="nc" id="L51">                    condition.append(&quot;id = ? AND &quot;);</span>
+<span class="nc" id="L52">                    sqlParams.add(value);</span>
+<span class="nc" id="L53">                    break;</span>
+                case &quot;bill_date&quot;:
+<span class="nc" id="L55">                    condition.append(&quot;bill_time BETWEEN CONCAT(?, ' 00:00:00') AND CONCAT(?, ' 23:59:59') AND &quot;);</span>
+<span class="nc" id="L56">                    sqlParams.add(value);</span>
+<span class="nc" id="L57">                    sqlParams.add(value);</span>
+<span class="nc" id="L58">                    break;</span>
+                case &quot;bill_date_start&quot;:
+<span class="nc" id="L60">                    condition.append(&quot;bill_time &gt;= CONCAT(?, ' 00:00:00') AND &quot;);</span>
+<span class="nc" id="L61">                    sqlParams.add(value);</span>
+<span class="nc" id="L62">                    break;</span>
+                case &quot;bill_date_end&quot;:
+<span class="nc" id="L64">                    condition.append(&quot;bill_time &lt;= CONCAT(?, ' 23:59:59') AND &quot;);</span>
+<span class="nc" id="L65">                    sqlParams.add(value);</span>
+<span class="nc" id="L66">                    break;</span>
+                case &quot;amount_min&quot;:
+<span class="nc" id="L68">                    condition.append(&quot;amount &gt;= ? AND &quot;);</span>
+<span class="nc" id="L69">                    sqlParams.add(value);</span>
+<span class="nc" id="L70">                    break;</span>
+                case &quot;amount_max&quot;:
+<span class="nc" id="L72">                    condition.append(&quot;amount &lt;= ? AND &quot;);</span>
+<span class="nc" id="L73">                    sqlParams.add(value);</span>
+<span class="nc" id="L74">                    break;</span>
+                case &quot;amount&quot;:
+<span class="nc" id="L76">                    condition.append(&quot;amount = ? AND &quot;);</span>
+<span class="nc" id="L77">                    sqlParams.add(value);</span>
+<span class="nc" id="L78">                    break;</span>
+                case &quot;type&quot;:
+                case &quot;category_id&quot;:
+                case &quot;specific_type_id&quot;:
+<span class="nc" id="L82">                    condition.append(key).append(&quot; = ? AND &quot;);</span>
+<span class="nc" id="L83">                    sqlParams.add(value);</span>
+<span class="nc" id="L84">                    break;</span>
+                case &quot;remark&quot;:
+<span class="nc" id="L86">                    condition.append(&quot;remark LIKE CONCAT('%', ?, '%') AND &quot;);</span>
+<span class="nc" id="L87">                    sqlParams.add(value);</span>
+<span class="nc" id="L88">                    break;</span>
+                default:
+                    break;
+            }
+<span class="nc" id="L92">        }</span>
+
+        // 3. 处理条件字符串（移除末尾多余的 &quot;AND &quot;）
+<span class="nc" id="L95">        String finalCondition = &quot;&quot;;</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        if (condition.length() &gt; 0) {</span>
+<span class="nc" id="L97">            finalCondition = condition.substring(0, condition.length() - 4);</span>
+        } else {
+<span class="nc" id="L99">            System.out.println(&quot;所有查询条件均为null，默认返回所有账单（按时间由近到远）&quot;);</span>
+<span class="nc" id="L100">            List&lt;Bill&gt; allBills = billDAO.queryAllBillsOrderByTimeDesc();</span>
+<span class="nc" id="L101">            return BillListResponse.fromBillList(allBills);</span>
+        }
+
+        // 4. 调用 DAO 查询
+<span class="nc" id="L105">        List&lt;Map&lt;String, Object&gt;&gt; mapList = billDAO.queryBills(&quot;*&quot;, finalCondition, sqlParams.toArray());</span>
+
+        // 5. 转换结果并返回
+<span class="nc" id="L108">        List&lt;Bill&gt; billList = BillConvertUtils.mapListToBillList(mapList);</span>
+<span class="nc" id="L109">        return BillListResponse.fromBillList(billList);</span>
+    }
+
+    /**
+     * 修复：添加对billId的检查，确保有billId时不视为&quot;无有效条件&quot;
+     */
+    private boolean isAllParamsNull(BillSearchParams params) {
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        return params.getId() == null &amp;&amp;  // 新增：检查billId是否为null</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">               params.getTime() == null &amp;&amp;</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">               params.getTimeStart() == null &amp;&amp;</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">               params.getTimeEnd() == null &amp;&amp;</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">               params.getAmount() == null &amp;&amp;</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">               params.getAmountMin() == null &amp;&amp;</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">               params.getAmountMax() == null &amp;&amp;</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">               params.getType() == null &amp;&amp;</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">               params.getCategoryId() == null &amp;&amp;</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">               params.getSpecificTypeId() == null &amp;&amp;</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">               params.getRemark() == null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

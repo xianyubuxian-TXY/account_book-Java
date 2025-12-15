@@ -1,0 +1,3 @@
+com\accountbook\backend\service\impl\bill\AddBillServiceIntegrationTest.class
+com\accountbook\backend\common\util\BillConvertUtilsFuzzTest.class
+com\accountbook\backend\common\util\BillConvertUtilsTest.class

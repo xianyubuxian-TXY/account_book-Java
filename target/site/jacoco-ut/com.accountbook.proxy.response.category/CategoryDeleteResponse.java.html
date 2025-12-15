@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryDeleteResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.proxy.response.category</a> &gt; <span class="el_source">CategoryDeleteResponse.java</span></div><h1>CategoryDeleteResponse.java</h1><pre class="source lang-java linenums">package com.accountbook.proxy.response.category;
+
+/**
+ * 分类删除响应：返回被删除的分类ID信息
+ */
+public class CategoryDeleteResponse {
+    // 被删除的分类ID（前端用于刷新列表或提示用户）
+    private Integer categoryId;
+
+    // 构造方法：接收被删除的分类ID
+<span class="nc" id="L11">    public CategoryDeleteResponse(Integer categoryId) {</span>
+<span class="nc" id="L12">        this.categoryId = categoryId;</span>
+<span class="nc" id="L13">    }</span>
+
+    // Getter + Setter（与其他响应类保持一致，提供完整访问能力）
+    public Integer getCategoryId() {
+<span class="nc" id="L17">        return categoryId;</span>
+    }
+
+    public void setCategoryId(Integer categoryId) {
+<span class="nc" id="L21">        this.categoryId = categoryId;</span>
+<span class="nc" id="L22">    }</span>
+
+    /**
+     * 格式化字符串：用于日志打印或前端提示拼接
+     * @return 格式化的删除信息
+     */
+    public String getFormattedString() {
+<span class="nc" id="L29">        return &quot;└─ 已删除的分类ID：&quot; + categoryId + &quot;\n&quot;;</span>
+    }
+
+    /**
+     * 打印删除响应详情（与其他响应类的printSelf逻辑一致）
+     */
+    public void printSelf() {
+<span class="nc" id="L36">        StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L37">        sb.append(&quot;CategoryDeleteResponse 详情：\n&quot;)</span>
+<span class="nc" id="L38">          .append(getFormattedString());</span>
+<span class="nc" id="L39">        System.out.println(sb.toString());</span>
+<span class="nc" id="L40">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

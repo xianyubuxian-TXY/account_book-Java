@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AddSpecificTypeService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.backend.service.impl.specific_type</a> &gt; <span class="el_source">AddSpecificTypeService.java</span></div><h1>AddSpecificTypeService.java</h1><pre class="source lang-java linenums">package com.accountbook.backend.service.impl.specific_type;
+
+import com.accountbook.backend.common.exception.BusinessServiceException;
+import com.accountbook.backend.service.BusinessService;
+import com.accountbook.backend.storage.dao.SpecificTypeDAO;
+import com.accountbook.backend.storage.dao.factory.DAOFactory;
+import com.accountbook.backend.storage.entity.SpecificType;
+import com.accountbook.proxy.request.specific_type.SpecificTypeAddParams;
+import com.accountbook.proxy.response.specific_type.SpecificTypeSingleResponse;
+
+import java.util.Map;
+
+/**
+ * 新增具体类型服务实现
+ * 逻辑：参数转换 → 调用DAO新增 → 校验结果 → 查询新增数据 → 转换为响应
+ */
+<span class="nc" id="L17">public class AddSpecificTypeService implements BusinessService&lt;SpecificTypeAddParams, SpecificTypeSingleResponse&gt; {</span>
+
+    // 注入具体类型DAO（通过工厂获取，与其他服务保持一致）
+<span class="nc" id="L20">    private final SpecificTypeDAO specificTypeDAO = DAOFactory.getSpecificTypeDAO();</span>
+
+    @Override
+    public SpecificTypeSingleResponse execute(SpecificTypeAddParams params) throws Exception {
+<span class="nc" id="L24">        System.out.println(&quot;执行新增具体类型服务&quot;);</span>
+
+        // 1. 将请求参数转换为Map（适配DAO的addSpecificType方法）
+<span class="nc" id="L27">        Map&lt;String, Object&gt; specificTypeMap = params.toMap();</span>
+
+        // 2. 调用DAO新增具体类型，获取生成的主键ID
+<span class="nc" id="L30">        int specificTypeId = specificTypeDAO.addSpecificType(specificTypeMap);</span>
+
+        // 3. 校验新增结果（-1表示新增失败）
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        if (specificTypeId == -1) {</span>
+<span class="nc" id="L34">            throw new BusinessServiceException(&quot;新增具体类型失败：DAO返回异常&quot;);</span>
+        }
+
+        // 4. 通过主键查询新增的具体类型（确保数据一致性）
+<span class="nc" id="L38">        SpecificType newSpecificType = specificTypeDAO.querySpecificTypeById(specificTypeId);</span>
+
+        // 5. 转换为前端响应对象（注意：响应类中字段billId应为specificTypeId，此处按用户定义字段适配）
+<span class="nc" id="L41">        return new SpecificTypeSingleResponse(</span>
+<span class="nc" id="L42">                newSpecificType.getId(),</span>
+<span class="nc" id="L43">                newSpecificType.getName(),</span>
+<span class="nc" id="L44">                newSpecificType.getCategoryId()</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

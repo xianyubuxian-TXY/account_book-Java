@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BudgetDAOImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.backend.storage.dao.impl</a> &gt; <span class="el_source">BudgetDAOImpl.java</span></div><h1>BudgetDAOImpl.java</h1><pre class="source lang-java linenums">package com.accountbook.backend.storage.dao.impl;
+
+import com.accountbook.backend.common.exception.BusinessServiceException;
+import com.accountbook.backend.common.util.BudgetConvertUtils;
+import com.accountbook.backend.storage.dao.BaseDAO;
+import com.accountbook.backend.storage.dao.BudgetDAO;
+import com.accountbook.backend.storage.entity.Budget;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 预算DAO实现类：适配新表结构，SQL语句与字段名对齐
+ */
+<span class="nc" id="L15">public class BudgetDAOImpl extends BaseDAO implements BudgetDAO {</span>
+    private static final String TABLE_BUDGET = &quot;budget&quot;;
+
+    @Override
+    public int addBudget(Map&lt;String, Object&gt; budgetMap) {
+        try {
+<span class="nc" id="L21">            return super.insert(TABLE_BUDGET, budgetMap);</span>
+<span class="nc" id="L22">        } catch (Exception e) {</span>
+<span class="nc" id="L23">            System.err.println(&quot;新增预算失败：&quot; + e.getMessage());</span>
+<span class="nc" id="L24">            return -1;</span>
+        }
+    }
+
+    @Override
+    public int updateBudget(Map&lt;String, Object&gt; fieldMap, String condition, Object... params) {
+        try {
+<span class="nc" id="L31">            return super.update(TABLE_BUDGET, fieldMap, condition, params);</span>
+<span class="nc" id="L32">        } catch (Exception e) {</span>
+<span class="nc" id="L33">            System.err.println(&quot;更新预算失败：&quot; + e.getMessage());</span>
+<span class="nc" id="L34">            return -1;</span>
+        }
+    }
+
+    @Override
+    public int deleteBudget(String condition, Object... params) {
+        try {
+<span class="nc" id="L41">            return super.delete(TABLE_BUDGET, condition, params);</span>
+<span class="nc" id="L42">        } catch (Exception e) {</span>
+<span class="nc" id="L43">            System.err.println(&quot;删除预算失败：&quot; + e.getMessage());</span>
+<span class="nc" id="L44">            return -1;</span>
+        }
+    }
+
+    @Override
+    public List&lt;Map&lt;String, Object&gt;&gt; queryBudgets(String fields, String condition, Object... params) {
+        try {
+<span class="nc" id="L51">            return super.query(TABLE_BUDGET, fields, condition, params);</span>
+<span class="nc" id="L52">        } catch (Exception e) {</span>
+<span class="nc" id="L53">            System.err.println(&quot;查询预算失败：&quot; + e.getMessage());</span>
+<span class="nc" id="L54">            return null;</span>
+        }
+    }
+
+    @Override
+    public List&lt;Map&lt;String, Object&gt;&gt; queryBudgetsWithJoin(String customSql, Object... params) {
+        try {
+<span class="nc" id="L61">            return super.queryByCustomSql(customSql, params);</span>
+<span class="nc" id="L62">        } catch (Exception e) {</span>
+<span class="nc" id="L63">            System.err.println(&quot;关联查询预算失败：&quot; + e.getMessage());</span>
+<span class="nc" id="L64">            return null;</span>
+        }
+    }
+
+    @Override
+    public Budget queryBudgetById(Integer id) {
+<span class="nc bnc" id="L70" title="All 4 branches missed.">        if (id == null || id &lt;= 0) {</span>
+<span class="nc" id="L71">            throw new BusinessServiceException(&quot;预算ID必须为正整数&quot;);</span>
+        }
+
+        try {
+<span class="nc" id="L75">            List&lt;Map&lt;String, Object&gt;&gt; mapList = super.query(TABLE_BUDGET, &quot;*&quot;, &quot;id = ?&quot;, id);</span>
+<span class="nc bnc" id="L76" title="All 4 branches missed.">            if (mapList == null || mapList.isEmpty()) {</span>
+<span class="nc" id="L77">                throw new BusinessServiceException(&quot;未找到ID为&quot; + id + &quot;的预算&quot;);</span>
+            }
+<span class="nc" id="L79">            return BudgetConvertUtils.mapToBudget(mapList.get(0));</span>
+<span class="nc" id="L80">        } catch (BusinessServiceException e) {</span>
+<span class="nc" id="L81">            throw e;</span>
+<span class="nc" id="L82">        } catch (Exception e) {</span>
+<span class="nc" id="L83">            throw new BusinessServiceException(&quot;查询预算ID[&quot; + id + &quot;]失败：&quot; + e.getMessage());</span>
+        }
+    }
+
+    @Override
+    public int deleteBudgetById(Integer id) {
+<span class="nc bnc" id="L89" title="All 4 branches missed.">        if (id == null || id &lt;= 0) {</span>
+<span class="nc" id="L90">            throw new BusinessServiceException(&quot;预算ID必须为正整数&quot;);</span>
+        }
+
+        try {
+<span class="nc" id="L94">            return super.delete(TABLE_BUDGET, &quot;id = ?&quot;, id);</span>
+<span class="nc" id="L95">        } catch (Exception e) {</span>
+<span class="nc" id="L96">            System.err.println(&quot;删除预算ID[&quot; + id + &quot;]失败：&quot; + e.getMessage());</span>
+<span class="nc" id="L97">            return -1;</span>
+        }
+    }
+
+    @Override
+    public int updateBudgetById(Integer id, Map&lt;String, Object&gt; fieldMap) {
+<span class="nc bnc" id="L103" title="All 4 branches missed.">        if (id == null || id &lt;= 0) {</span>
+<span class="nc" id="L104">            throw new BusinessServiceException(&quot;预算ID必须为正整数&quot;);</span>
+        }
+<span class="nc bnc" id="L106" title="All 4 branches missed.">        if (fieldMap == null || fieldMap.isEmpty()) {</span>
+<span class="nc" id="L107">            throw new BusinessServiceException(&quot;至少需要一个更新字段&quot;);</span>
+        }
+
+        try {
+<span class="nc" id="L111">            return super.update(TABLE_BUDGET, fieldMap, &quot;id = ?&quot;, id);</span>
+<span class="nc" id="L112">        } catch (Exception e) {</span>
+<span class="nc" id="L113">            System.err.println(&quot;更新预算ID[&quot; + id + &quot;]失败：&quot; + e.getMessage());</span>
+<span class="nc" id="L114">            return -1;</span>
+        }
+    }
+
+    @Override
+    public List&lt;Budget&gt; queryAllBudgetsOrderByMonthDesc() {
+        try {
+            // 全查询并按月份从大到小排序（DESC）
+<span class="nc" id="L122">            String sql = &quot;SELECT * FROM &quot; + TABLE_BUDGET + &quot; ORDER BY month DESC&quot;;</span>
+<span class="nc" id="L123">            List&lt;Map&lt;String, Object&gt;&gt; mapList = super.queryByCustomSql(sql);</span>
+<span class="nc" id="L124">            return BudgetConvertUtils.mapListToBudgetList(mapList);</span>
+<span class="nc" id="L125">        } catch (Exception e) {</span>
+<span class="nc" id="L126">            throw new BusinessServiceException(&quot;查询所有预算（按月份倒序）失败：&quot; + e.getMessage());</span>
+        }
+    }
+
+    @Override
+    public List&lt;Budget&gt; queryBudgetsByMonth(String month) {
+<span class="nc bnc" id="L132" title="All 4 branches missed.">        if (month == null || month.trim().isEmpty()) {</span>
+<span class="nc" id="L133">            throw new BusinessServiceException(&quot;预算月份不能为空&quot;);</span>
+        }
+
+        try {
+<span class="nc" id="L137">            List&lt;Map&lt;String, Object&gt;&gt; mapList = super.query(TABLE_BUDGET, &quot;*&quot;, &quot;month = ?&quot;, month);</span>
+<span class="nc" id="L138">            return BudgetConvertUtils.mapListToBudgetList(mapList);</span>
+<span class="nc" id="L139">        } catch (Exception e) {</span>
+<span class="nc" id="L140">            throw new BusinessServiceException(&quot;查询月份[&quot; + month + &quot;]的预算失败：&quot; + e.getMessage());</span>
+        }
+    }
+
+    @Override
+    public List&lt;Budget&gt; queryBudgetsByCategoryId(Integer categoryId) {
+<span class="nc bnc" id="L146" title="All 4 branches missed.">        if (categoryId == null || categoryId &lt;= 0) {</span>
+<span class="nc" id="L147">            throw new BusinessServiceException(&quot;分类ID必须为正整数&quot;);</span>
+        }
+
+        try {
+<span class="nc" id="L151">            List&lt;Map&lt;String, Object&gt;&gt; mapList = super.query(TABLE_BUDGET, &quot;*&quot;, &quot;category_id = ?&quot;, categoryId);</span>
+<span class="nc" id="L152">            return BudgetConvertUtils.mapListToBudgetList(mapList);</span>
+<span class="nc" id="L153">        } catch (Exception e) {</span>
+<span class="nc" id="L154">            throw new BusinessServiceException(&quot;查询分类ID[&quot; + categoryId + &quot;]的预算失败：&quot; + e.getMessage());</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

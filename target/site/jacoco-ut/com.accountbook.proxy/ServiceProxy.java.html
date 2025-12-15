@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServiceProxy.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.proxy</a> &gt; <span class="el_source">ServiceProxy.java</span></div><h1>ServiceProxy.java</h1><pre class="source lang-java linenums">package com.accountbook.proxy;
+
+import com.accountbook.backend.common.exception.BusinessServiceException;
+import com.accountbook.backend.factory.BusinessFactory;
+import com.accountbook.backend.service.BusinessService;
+import com.accountbook.proxy.request.bill.BillDeleteParams;
+
+public class ServiceProxy {
+    private final BusinessFactory businessFactory;
+
+<span class="nc" id="L11">    public ServiceProxy(BusinessFactory factory) {</span>
+<span class="nc" id="L12">        businessFactory = factory;</span>
+<span class="nc" id="L13">    }</span>
+
+    /**
+     * 处理泛型请求，传递参数并返回标准化响应
+     * @param request 前端泛型请求
+     * @param &lt;T&gt; 请求参数类型
+     * @param &lt;R&gt; 响应数据类型
+     * @return 标准化后端响应（泛型类型，与业务结果匹配）
+     */
+    public &lt;T, R&gt; BackendResponse&lt;R&gt; handleRequest(FrontendRequest&lt;T&gt; request) {
+        // 1. 校验请求合法性
+<span class="nc bnc" id="L24" title="All 4 branches missed.">        if (request == null || request.getType() == null) {</span>
+<span class="nc" id="L25">            return BackendResponse.fail( &quot;请求对象或请求类型不能为空&quot;);</span>
+        }
+
+        // 2. 获取对应业务服务
+<span class="nc" id="L29">        BusinessService&lt;T, R&gt; service = getBusinessService(request.getType());</span>
+<span class="nc bnc" id="L30" title="All 2 branches missed.">        if (service == null) {</span>
+<span class="nc" id="L31">            return BackendResponse.fail(&quot;无效的请求类型：&quot; + request.getType());</span>
+        }
+
+        try {
+            // 3. 提取参数并执行业务逻辑
+<span class="nc" id="L36">            T params = request.getParams();</span>
+            // 可选：参数非空校验（根据业务需求调整，部分服务可能允许空参数）
+<span class="nc" id="L38">            validateParams(request.getType(), params);</span>
+            
+<span class="nc" id="L40">            R result = service.execute(params);</span>
+            // 4. 返回成功响应（携带业务结果）
+<span class="nc" id="L42">            return BackendResponse.success(&quot;处理成功&quot;, result);</span>
+<span class="nc" id="L43">        } catch (IllegalArgumentException e) {</span>
+            // 5. 处理参数非法异常
+<span class="nc" id="L45">            return BackendResponse.fail(&quot;参数错误：&quot; + e.getMessage());</span>
+<span class="nc" id="L46">        } catch (NullPointerException e) {</span>
+            // 6. 处理空指针异常
+<span class="nc" id="L48">            return BackendResponse.fail(&quot;关键参数为空：&quot; + e.getMessage());</span>
+<span class="nc" id="L49">        } catch (BusinessServiceException e) {</span>
+            // 7. 处理账单业务异常
+<span class="nc" id="L51">            return BackendResponse.fail(e.getMessage());</span>
+<span class="nc" id="L52">        } catch (Exception e) {</span>
+            // 8. 捕获所有其他检查型/运行时异常（兜底处理）
+            // 建议记录详细日志，便于排查问题（如SQL异常、IO异常等）
+<span class="nc" id="L55">            System.err.println(&quot;系统异常：&quot; + e.getMessage());</span>
+<span class="nc" id="L56">            e.printStackTrace(); // 生产环境建议用日志框架（如SLF4J）记录</span>
+            // 前端展示通用提示，避免暴露敏感信息
+<span class="nc" id="L58">            return BackendResponse.fail(&quot;系统繁忙，请稍后重试&quot;);</span>
+        }
+    }
+
+    /**
+     * 根据请求类型获取对应的泛型业务服务
+     */
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private &lt;T, R&gt; BusinessService&lt;T, R&gt;getBusinessService (FrontendRequest.RequestType requestType) {
+<span class="nc bnc" id="L67" title="All 18 branches missed.">        return switch (requestType) {</span>
+<span class="nc" id="L68">            case ADD_BILL -&gt; (BusinessService&lt;T, R&gt;) businessFactory.createAddBillService();</span>
+<span class="nc" id="L69">            case DELETE_BILL -&gt; (BusinessService&lt;T, R&gt;) businessFactory.createDeleteBillService();</span>
+<span class="nc" id="L70">            case CHANGE_BILL -&gt; (BusinessService&lt;T, R&gt;) businessFactory.createChangeBillService();</span>
+<span class="nc" id="L71">            case SEARCH_BILL -&gt; (BusinessService&lt;T, R&gt;) businessFactory.createSearchBillService();</span>
+<span class="nc" id="L72">            case STATISTIC_BILL -&gt; (BusinessService&lt;T, R&gt;) businessFactory.createStatisticBillService();</span>
+
+<span class="nc" id="L74">            case ADD_CATEGORY -&gt; (BusinessService&lt;T,R&gt;) businessFactory.createAddCategoryService();</span>
+<span class="nc" id="L75">            case DELETE_CATEGORY -&gt; (BusinessService&lt;T,R&gt;) businessFactory.createDeleteCategoryService();</span>
+<span class="nc" id="L76">            case CHANGE_CATEGORY -&gt; (BusinessService&lt;T,R&gt;) businessFactory.createChangeCategoryService();</span>
+<span class="nc" id="L77">            case SEARCH_CATEGORY -&gt; (BusinessService&lt;T,R&gt;) businessFactory.createSearchCategoryService();</span>
+
+<span class="nc" id="L79">            case ADD_SPECIFIC_TYPE -&gt; (BusinessService&lt;T,R&gt;) businessFactory.createAddSpecificTypeService();</span>
+<span class="nc" id="L80">            case DELETE_SPECIFIC_TYPE -&gt; (BusinessService&lt;T,R&gt;) businessFactory.createDeleteSpecificTypeService();</span>
+<span class="nc" id="L81">            case CHANGE_SPECIFIC_TYPE -&gt; (BusinessService&lt;T,R&gt;) businessFactory.createChangeSpecificTypeService();</span>
+<span class="nc" id="L82">            case SEARCH_SPECIFIC_TYPE -&gt; (BusinessService&lt;T,R&gt;) businessFactory.createSearchSpecificTypeService();</span>
+
+<span class="nc" id="L84">            case ADD_BUDGET -&gt; (BusinessService&lt;T, R&gt;) businessFactory.createAddBudgetService();</span>
+<span class="nc" id="L85">            case DELETE_BUDGET -&gt; (BusinessService&lt;T, R&gt;) businessFactory.createDeleteBudgetService();</span>
+<span class="nc" id="L86">            case CHANGE_BUDGET -&gt; (BusinessService&lt;T, R&gt;) businessFactory.createChangeBudgetService();</span>
+<span class="nc" id="L87">            case SEARCH_BUDGET -&gt; (BusinessService&lt;T, R&gt;) businessFactory.createSearchBudgetService();</span>
+<span class="nc" id="L88">            default -&gt; null;</span>
+        };
+    }
+
+/**
+ * 可选：参数合法性校验（根据具体业务需求扩展）
+ * @param requestType 请求类型
+ * @param params 待校验参数
+ */
+private &lt;T&gt; void validateParams(FrontendRequest.RequestType requestType, T params) {
+<span class="nc bnc" id="L98" title="All 3 branches missed.">    switch (requestType) {</span>
+        case ADD_BILL:
+        case CHANGE_BILL:
+<span class="nc bnc" id="L101" title="All 2 branches missed.">            if (params == null) {</span>
+<span class="nc" id="L102">                throw new IllegalArgumentException(requestType.name() + &quot;请求参数不能为空&quot;);</span>
+            }
+            break;
+        case DELETE_BILL:
+            // 修正：校验参数是DeleteBillParams类型，且billId为正整数
+<span class="nc bnc" id="L107" title="All 4 branches missed.">            if (params == null || !(params instanceof BillDeleteParams)) {</span>
+<span class="nc" id="L108">                throw new IllegalArgumentException(&quot;删除账单请求参数不能为空且必须为DeleteBillParams类型&quot;);</span>
+            }
+<span class="nc" id="L110">            BillDeleteParams deleteParams = (BillDeleteParams) params;</span>
+<span class="nc" id="L111">            Integer billId = deleteParams.getBillId();</span>
+<span class="nc bnc" id="L112" title="All 4 branches missed.">            if (billId == null || billId &lt;= 0) {</span>
+<span class="nc" id="L113">                throw new IllegalArgumentException(&quot;删除账单的ID必须为正整数（当前值：&quot; + billId + &quot;）&quot;);</span>
+            }
+            break;
+        // 其他请求类型的参数校验可按需添加
+        default:
+            break;
+    }
+<span class="nc" id="L120">}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BillChangeParams.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.proxy.request.bill</a> &gt; <span class="el_source">BillChangeParams.java</span></div><h1>BillChangeParams.java</h1><pre class="source lang-java linenums">package com.accountbook.proxy.request.bill;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 修改账单请求参数类（参考AddBillParams设计风格）
+ * 支持部分字段修改，包含参数转换为Map的方法
+ */
+public class BillChangeParams {
+    // 必填字段：待修改的账单ID
+    private Integer billId;
+    // 可选字段：新的账单时间（格式：YYYY-MM-DD HH:mm）
+    private String billTime;
+    // 可选字段：新的收支类型（1=收入，-1=支出）
+    private Integer type;
+    // 可选字段：新的大类ID
+    private Integer categoryId;
+    // 可选字段：新的具体类型ID
+    private Integer specificTypeId;
+    // 可选字段：新的金额
+    private BigDecimal amount;
+    // 可选字段：新的备注
+    private String remark;
+
+    /**
+     * 构造方法：必填账单ID，其他字段通过Setter动态设置（支持部分修改）
+     * @param billId 待修改的账单ID（必填，正整数）
+     */
+<span class="nc" id="L31">    public BillChangeParams(Integer billId) {</span>
+<span class="nc" id="L32">        this.billId = billId;</span>
+<span class="nc" id="L33">    }</span>
+
+    /**
+     * 全参构造方法（可选，适用于需要一次性设置所有字段的场景）
+     */
+    public BillChangeParams(Integer billId, String billTime, Integer type,
+<span class="nc" id="L39">                           Integer categoryId, Integer specificTypeId, BigDecimal amount, String remark) {</span>
+<span class="nc" id="L40">        this.billId = billId;</span>
+<span class="nc" id="L41">        this.billTime = billTime;</span>
+<span class="nc" id="L42">        this.type = type;</span>
+<span class="nc" id="L43">        this.categoryId = categoryId;</span>
+<span class="nc" id="L44">        this.specificTypeId = specificTypeId;</span>
+<span class="nc" id="L45">        this.amount = amount;</span>
+<span class="nc" id="L46">        this.remark = remark;</span>
+<span class="nc" id="L47">    }</span>
+
+    /**
+     * 将参数转换为 Map（键为数据库字段名，值为字段值）
+     * 用于 SQL 更新操作的参数绑定，仅包含非空字段（避免覆盖原有值）
+     */
+    public Map&lt;String, Object&gt; toMap() {
+<span class="nc" id="L54">        Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (this.billTime != null) map.put(&quot;bill_time&quot;, this.billTime);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        if (this.type != null) map.put(&quot;type&quot;, this.type);</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (this.categoryId != null) map.put(&quot;category_id&quot;, this.categoryId);</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (this.specificTypeId != null) map.put(&quot;specific_type_id&quot;, this.specificTypeId);</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        if (this.amount != null) map.put(&quot;amount&quot;, this.amount);</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        if (this.remark != null) map.put(&quot;remark&quot;, this.remark);</span>
+<span class="nc" id="L61">        return map;</span>
+    }
+
+    /**
+     * 获取账单ID的Map（用于SQL的WHERE条件绑定）
+     */
+    public Map&lt;String, Object&gt; getBillIdMap() {
+<span class="nc" id="L68">        Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L69">        map.put(&quot;id&quot;, this.billId);</span>
+<span class="nc" id="L70">        return map;</span>
+    }
+
+    // 紧凑格式的 Getter/Setter
+<span class="nc" id="L74">    public Integer getBillId() { return billId; }</span>
+<span class="nc" id="L75">    public void setBillId(Integer billId) { this.billId = billId; }</span>
+<span class="nc" id="L76">    public String getBillTime() { return billTime; }</span>
+<span class="nc" id="L77">    public void setBillTime(String billTime) { this.billTime = billTime; }</span>
+<span class="nc" id="L78">    public Integer getType() { return type; }</span>
+<span class="nc" id="L79">    public void setType(Integer type) { this.type = type; }</span>
+<span class="nc" id="L80">    public Integer getCategoryId() { return categoryId; }</span>
+<span class="nc" id="L81">    public void setCategoryId(Integer categoryId) { this.categoryId = categoryId; }</span>
+<span class="nc" id="L82">    public Integer getSpecificTypeId() { return specificTypeId; }</span>
+<span class="nc" id="L83">    public void setSpecificTypeId(Integer specificTypeId) { this.specificTypeId = specificTypeId; }</span>
+<span class="nc" id="L84">    public BigDecimal getAmount() { return amount; }</span>
+<span class="nc" id="L85">    public void setAmount(BigDecimal amount) { this.amount = amount; }</span>
+<span class="nc" id="L86">    public String getRemark() { return remark; }</span>
+<span class="nc" id="L87">    public void setRemark(String remark) { this.remark = remark; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

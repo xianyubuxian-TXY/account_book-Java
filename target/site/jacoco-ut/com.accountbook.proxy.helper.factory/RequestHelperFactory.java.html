@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RequestHelperFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.proxy.helper.factory</a> &gt; <span class="el_source">RequestHelperFactory.java</span></div><h1>RequestHelperFactory.java</h1><pre class="source lang-java linenums">package com.accountbook.proxy.helper.factory;
+
+import com.accountbook.proxy.ServiceProxy;
+import com.accountbook.proxy.helper.BaseRequestHelper;
+import com.accountbook.proxy.helper.impl.BillRequestHelper;
+import com.accountbook.proxy.helper.impl.CategoryRequestHelper;
+import com.accountbook.proxy.helper.impl.SpecificTypeRequestHelper;
+import com.accountbook.proxy.helper.impl.BudgetRequestHelper;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 共享模式请求助手工厂：单例+实例容器，确保Helper实例全局共享，支持前端页面注入
+ * 扩展：新增预算请求助手的获取方法
+ */
+public class RequestHelperFactory {
+    // 1. 单例工厂实例（全局唯一）
+<span class="nc" id="L19">    private static final RequestHelperFactory INSTANCE = new RequestHelperFactory();</span>
+
+    // 2. 共享实例容器：存储已创建的Helper实例（key=Helper类型标识，value=实例）
+<span class="nc" id="L22">    private final Map&lt;String, BaseRequestHelper&gt; helperContainer = new HashMap&lt;&gt;();</span>
+
+    // 3. 私有构造：禁止外部实例化
+<span class="nc" id="L25">    private RequestHelperFactory() {}</span>
+
+    // 4. 全局获取工厂实例的入口（供前端页面注入使用）
+    public static RequestHelperFactory getInstance() {
+<span class="nc" id="L29">        return INSTANCE;</span>
+    }
+
+    /**
+     * 获取或创建账单请求助手（共享实例）
+     * 首次调用创建实例并放入容器，后续调用直接从容器获取
+     * @param serviceProxy 业务代理（仅首次创建时需要，后续可传null）
+     * @return 共享的BillRequestHelper实例
+     */
+    public BillRequestHelper getBillHelper(ServiceProxy serviceProxy) {
+<span class="nc" id="L39">        String key = BillRequestHelper.class.getName(); // 用类名作为唯一标识</span>
+        // 从容器获取已有实例
+<span class="nc" id="L41">        BillRequestHelper helper = (BillRequestHelper) helperContainer.get(key);</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        if (helper == null) {</span>
+            // 首次创建：初始化并放入容器
+<span class="nc" id="L44">            helper = new BillRequestHelper();</span>
+<span class="nc" id="L45">            helper.init(serviceProxy); // 调用基类初始化方法</span>
+<span class="nc" id="L46">            helperContainer.put(key, helper);</span>
+        }
+<span class="nc" id="L48">        return helper;</span>
+    }
+
+    /**
+     * 获取或创建分类请求助手（共享实例）
+     * 首次调用创建实例并放入容器，后续调用直接从容器获取
+     * @param serviceProxy 业务代理（仅首次创建时需要，后续可传null）
+     * @return 共享的CategoryRequestHelper实例
+     */
+    public CategoryRequestHelper getCategoryHelper(ServiceProxy serviceProxy) {
+<span class="nc" id="L58">        String key = CategoryRequestHelper.class.getName(); // 类名作为唯一标识，避免冲突</span>
+<span class="nc" id="L59">        CategoryRequestHelper helper = (CategoryRequestHelper) helperContainer.get(key);</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        if (helper == null) {</span>
+<span class="nc" id="L61">            helper = new CategoryRequestHelper();</span>
+<span class="nc" id="L62">            helper.init(serviceProxy); // 注入ServiceProxy完成初始化</span>
+<span class="nc" id="L63">            helperContainer.put(key, helper);</span>
+        }
+<span class="nc" id="L65">        return helper;</span>
+    }
+
+    /**
+     * 获取或创建具体类型请求助手（共享实例）
+     * 首次调用创建实例并放入容器，后续调用直接从容器获取
+     * @param serviceProxy 业务代理（仅首次创建时需要，后续可传null）
+     * @return 共享的SpecificRequestHelper实例
+     */
+    public SpecificTypeRequestHelper getSpecificTypeHelper(ServiceProxy serviceProxy) {
+<span class="nc" id="L75">        String key = SpecificTypeRequestHelper.class.getName(); // 类名作为唯一标识</span>
+<span class="nc" id="L76">        SpecificTypeRequestHelper helper = (SpecificTypeRequestHelper) helperContainer.get(key);</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (helper == null) {</span>
+<span class="nc" id="L78">            helper = new SpecificTypeRequestHelper();</span>
+<span class="nc" id="L79">            helper.init(serviceProxy); // 调用基类初始化方法</span>
+<span class="nc" id="L80">            helperContainer.put(key, helper);</span>
+        }
+<span class="nc" id="L82">        return helper;</span>
+    }
+
+    /**
+     * 获取或创建预算请求助手（共享实例）
+     * 首次调用创建实例并放入容器，后续调用直接从容器获取
+     * @param serviceProxy 业务代理（仅首次创建时需要，后续可传null）
+     * @return 共享的BudgetHelper实例
+     */
+    public BudgetRequestHelper getBudgetHelper(ServiceProxy serviceProxy) {
+<span class="nc" id="L92">        String key = BudgetRequestHelper.class.getName(); // 类名作为唯一标识</span>
+<span class="nc" id="L93">        BudgetRequestHelper helper = (BudgetRequestHelper) helperContainer.get(key);</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (helper == null) {</span>
+<span class="nc" id="L95">            helper = new BudgetRequestHelper();</span>
+<span class="nc" id="L96">            helper.init(serviceProxy); // 调用基类初始化方法</span>
+<span class="nc" id="L97">            helperContainer.put(key, helper);</span>
+        }
+<span class="nc" id="L99">        return helper;</span>
+    }
+
+    /**
+     * 清空容器（用于测试或特殊场景）
+     */
+    public void clear() {
+<span class="nc" id="L106">        helperContainer.clear();</span>
+<span class="nc" id="L107">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

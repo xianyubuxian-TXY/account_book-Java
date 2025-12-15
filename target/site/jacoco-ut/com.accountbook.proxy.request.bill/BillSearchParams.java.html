@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BillSearchParams.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.proxy.request.bill</a> &gt; <span class="el_source">BillSearchParams.java</span></div><h1>BillSearchParams.java</h1><pre class="source lang-java linenums">package com.accountbook.proxy.request.bill;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+
+// 注：移除TimeUtils依赖（不再需要拼接时分）
+public class BillSearchParams {
+    //账单ID（用于精确查询单条账单）
+    private Integer Id;
+
+    
+    // 1. 原有单值查询字段（时间字段仅存“YYYY-MM-DD”格式）
+    private String time;                // 单值日期（如“2025-10-23”，无时分）
+    private Integer type;               // 收支类型（-1=支出，1=收入）
+    private Integer categoryId;         // 大类ID
+    private Integer specificTypeId;     // 具体类型ID
+    private BigDecimal amount;          // 单值金额（如100.00）
+    private String remark;                 // 备注关键词
+
+    // 2. 新增范围查询字段（时间范围同样仅“YYYY-MM-DD”格式）
+    private String timeStart;           // 日期范围起始（如“2025-10-01”）
+    private String timeEnd;             // 日期范围结束（如“2025-10-31”）
+    private BigDecimal amountMin;       // 金额范围最小值（如50.00）
+    private BigDecimal amountMax;       // 金额范围最大值（如200.00）
+
+    // 默认构造函数：其他字段通过Setter动态设置（支持部分修改）
+<span class="nc" id="L28">    public BillSearchParams() {}</span>
+
+    // 3. 原有构造方法（修改：移除时分拼接，时间仅接收“YYYY-MM-DD”）
+    public BillSearchParams(String billDate, Integer type, Integer categoryId,
+<span class="nc" id="L32">                        Integer specificTypeId, BigDecimal amount, String remark) {</span>
+<span class="nc" id="L33">        this.time = billDate; // 直接赋值日期，不再拼接TimeUtils的时分</span>
+<span class="nc" id="L34">        this.type = type;</span>
+<span class="nc" id="L35">        this.categoryId = categoryId;</span>
+<span class="nc" id="L36">        this.specificTypeId = specificTypeId;</span>
+<span class="nc" id="L37">        this.amount = amount;</span>
+<span class="nc" id="L38">        this.remark = remark;</span>
+<span class="nc" id="L39">    }</span>
+
+    // 4. 范围查询构造方法（时间参数仅“YYYY-MM-DD”，无时分）
+    /**
+     * 范围查询构造方法
+     * @param timeStart 日期起始（如“2025-10-01”，可为null）
+     * @param timeEnd 日期结束（如“2025-10-31”，可为null）
+     * @param type 收支类型（可为null）
+     * @param categoryId 大类ID（可为null）
+     * @param specificTypeId 具体类型ID（可为null）
+     * @param amountMin 金额最小值（可为null）
+     * @param amountMax 金额最大值（可为null）
+     * @param remark 备注关键词（可为null）
+     */
+    public BillSearchParams(String timeStart, String timeEnd, Integer type,
+                        Integer categoryId, Integer specificTypeId,
+<span class="nc" id="L55">                        BigDecimal amountMin, BigDecimal amountMax, String remark) {</span>
+<span class="nc" id="L56">        this.timeStart = timeStart; // 仅日期格式，无时分</span>
+<span class="nc" id="L57">        this.timeEnd = timeEnd;     // 仅日期格式，无时分</span>
+<span class="nc" id="L58">        this.type = type;</span>
+<span class="nc" id="L59">        this.categoryId = categoryId;</span>
+<span class="nc" id="L60">        this.specificTypeId = specificTypeId;</span>
+<span class="nc" id="L61">        this.amountMin = amountMin;</span>
+<span class="nc" id="L62">        this.amountMax = amountMax;</span>
+<span class="nc" id="L63">        this.remark = remark;</span>
+<span class="nc" id="L64">    }</span>
+
+    // 新增：按ID查询的构造方法（专门用于单ID精确查询）
+<span class="nc" id="L67">    public BillSearchParams(Integer Id) {</span>
+<span class="nc" id="L68">        this.Id = Id;</span>
+<span class="nc" id="L69">    }</span>
+
+    // 5. Getter/Setter（时间字段注释明确格式，避免误用）
+    // 原有字段 Getter/Setter
+<span class="nc" id="L73">    public String getTime() { return time; }</span>
+    /**
+     * 设置单值日期（仅支持“YYYY-MM-DD”格式，如“2025-10-23”）
+     */
+<span class="nc" id="L77">    public void setTime(String time) { this.time = time; }</span>
+<span class="nc" id="L78">    public Integer getType() { return type; }</span>
+<span class="nc" id="L79">    public void setType(Integer type) { this.type = type; }</span>
+<span class="nc" id="L80">    public Integer getCategoryId() { return categoryId; }</span>
+<span class="nc" id="L81">    public void setCategoryId(Integer categoryId) { this.categoryId = categoryId; }</span>
+<span class="nc" id="L82">    public Integer getSpecificTypeId() { return specificTypeId; }</span>
+<span class="nc" id="L83">    public void setSpecificTypeId(Integer specificTypeId) { this.specificTypeId = specificTypeId; }</span>
+<span class="nc" id="L84">    public BigDecimal getAmount() { return amount; }</span>
+<span class="nc" id="L85">    public void setAmount(BigDecimal amount) { this.amount = amount; }</span>
+<span class="nc" id="L86">    public String getRemark() { return remark; }</span>
+<span class="nc" id="L87">    public void setRemark(String key) { this.remark = key; }</span>
+
+    // 新增范围字段 Getter/Setter（时间字段明确格式）
+<span class="nc" id="L90">    public String getTimeStart() { return timeStart; }</span>
+    /**
+     * 设置日期范围起始（仅支持“YYYY-MM-DD”格式，如“2025-10-01”）
+     */
+<span class="nc" id="L94">    public void setTimeStart(String timeStart) { this.timeStart = timeStart; }</span>
+<span class="nc" id="L95">    public String getTimeEnd() { return timeEnd; }</span>
+    /**
+     * 设置日期范围结束（仅支持“YYYY-MM-DD”格式，如“2025-10-31”）
+     */
+<span class="nc" id="L99">    public void setTimeEnd(String timeEnd) { this.timeEnd = timeEnd; }</span>
+<span class="nc" id="L100">    public BigDecimal getAmountMin() { return amountMin; }</span>
+<span class="nc" id="L101">    public void setAmountMin(BigDecimal amountMin) { this.amountMin = amountMin; }</span>
+<span class="nc" id="L102">    public BigDecimal getAmountMax() { return amountMax; }</span>
+<span class="nc" id="L103">    public void setAmountMax(BigDecimal amountMax) { this.amountMax = amountMax; }</span>
+
+    // 新增 billId 的 Getter/Setter
+<span class="nc" id="L106">    public Integer getId() { return Id; }</span>
+<span class="nc" id="L107">    public void setId(Integer Id) { this.Id = Id; }</span>
+
+    /**
+     * 优化 toMap 方法：新增 billId 字段映射，时间字段仅存“YYYY-MM-DD”
+     */
+    public Map&lt;String, Object&gt; toMap() {
+<span class="nc" id="L113">        Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span>
+        // 新增：billId 字段映射（优先处理，按ID查询时生效）
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        if (this.Id != null) {</span>
+<span class="nc" id="L116">            map.put(&quot;id&quot;, this.Id);</span>
+        }
+        // 原有单值字段映射（时间仅“YYYY-MM-DD”）
+<span class="nc bnc" id="L119" title="All 4 branches missed.">        if (this.time != null &amp;&amp; !this.time.trim().isEmpty()) {</span>
+<span class="nc" id="L120">            map.put(&quot;bill_date&quot;, this.time); // 键名改为bill_date，明确是日期（非完整时间）</span>
+        }
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        if (this.amount != null) {</span>
+<span class="nc" id="L123">            map.put(&quot;amount&quot;, this.amount);</span>
+        }
+
+        // 新增范围字段映射（时间范围仅“YYYY-MM-DD”）
+<span class="nc bnc" id="L127" title="All 4 branches missed.">        if (this.timeStart != null &amp;&amp; !this.timeStart.trim().isEmpty()) {</span>
+<span class="nc" id="L128">            map.put(&quot;bill_date_start&quot;, this.timeStart); // 日期起始键名</span>
+        }
+<span class="nc bnc" id="L130" title="All 4 branches missed.">        if (this.timeEnd != null &amp;&amp; !this.timeEnd.trim().isEmpty()) {</span>
+<span class="nc" id="L131">            map.put(&quot;bill_date_end&quot;, this.timeEnd);     // 日期结束键名</span>
+        }
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (this.amountMin != null) {</span>
+<span class="nc" id="L134">            map.put(&quot;amount_min&quot;, this.amountMin);</span>
+        }
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        if (this.amountMax != null) {</span>
+<span class="nc" id="L137">            map.put(&quot;amount_max&quot;, this.amountMax);</span>
+        }
+
+        // 非范围字段映射（不变）
+<span class="nc" id="L141">        map.put(&quot;type&quot;, this.type);</span>
+<span class="nc" id="L142">        map.put(&quot;category_id&quot;, this.categoryId);</span>
+<span class="nc" id="L143">        map.put(&quot;specific_type_id&quot;, this.specificTypeId);</span>
+<span class="nc" id="L144">        map.put(&quot;remark&quot;, this.remark);</span>
+
+<span class="nc" id="L146">        return map;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

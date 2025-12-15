@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AccountBookServiceFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.backend.factory</a> &gt; <span class="el_source">AccountBookServiceFactory.java</span></div><h1>AccountBookServiceFactory.java</h1><pre class="source lang-java linenums">package com.accountbook.backend.factory;
+
+import com.accountbook.backend.service.BusinessService;
+import com.accountbook.backend.service.impl.bill.AddBillService;
+import com.accountbook.backend.service.impl.bill.ChangeBillService;
+import com.accountbook.backend.service.impl.bill.DeleteBillService;
+import com.accountbook.backend.service.impl.bill.SearchBillService;
+import com.accountbook.backend.service.impl.bill.StatisticBillService;
+import com.accountbook.backend.service.impl.bill.VisualService;
+import com.accountbook.backend.service.impl.budget.AddBudgetService;
+import com.accountbook.backend.service.impl.budget.ChangeBudgetService;
+import com.accountbook.backend.service.impl.budget.DeleteBudgetService;
+import com.accountbook.backend.service.impl.budget.SearchBudgetService;
+import com.accountbook.backend.service.impl.category.AddCategoryService;
+import com.accountbook.backend.service.impl.category.ChangeCategoryService;
+import com.accountbook.backend.service.impl.category.DeleteCategoryService;
+import com.accountbook.backend.service.impl.category.SearchCategoryService;
+import com.accountbook.backend.service.impl.specific_type.AddSpecificTypeService;
+import com.accountbook.backend.service.impl.specific_type.ChangeSpecificTypeService;
+import com.accountbook.backend.service.impl.specific_type.DeleteSpecificTypeService;
+import com.accountbook.backend.service.impl.specific_type.SearchSpecificTypeService;
+import com.accountbook.backend.storage.entity.Bill;
+import com.accountbook.proxy.response.bill.BillListResponse;
+import com.accountbook.proxy.response.bill.BillDeleteResponse;
+import com.accountbook.proxy.response.bill.BillSingleResponse;
+import com.accountbook.proxy.response.budget.BudgetDeleteResponse;
+import com.accountbook.proxy.response.budget.BudgetListResponse;
+import com.accountbook.proxy.response.budget.BudgetSingleResponse;
+import com.accountbook.proxy.response.category.CategorySingleResponse;
+import com.accountbook.proxy.response.category.CategoryDeleteResponse;
+import com.accountbook.proxy.response.category.CategoryListResponse;
+import com.accountbook.proxy.response.specific_type.SpecificTypeSingleResponse;
+import com.accountbook.proxy.response.specific_type.SpecificTypeDeleteResponse;
+import com.accountbook.proxy.response.specific_type.SpecificTypeListResponse;
+import com.accountbook.proxy.request.bill.BillAddParams;
+import com.accountbook.proxy.request.bill.BillChangeParams;
+import com.accountbook.proxy.request.bill.BillDeleteParams;
+import com.accountbook.proxy.request.bill.BillSearchParams;
+import com.accountbook.proxy.request.budget.BudgetAddParams;
+import com.accountbook.proxy.request.budget.BudgetChangeParams;
+import com.accountbook.proxy.request.budget.BudgetDeleteParams;
+import com.accountbook.proxy.request.budget.BudgetSearchParams;
+import com.accountbook.proxy.request.category.CategoryAddParams;
+import com.accountbook.proxy.request.category.CategoryChangeParams;
+import com.accountbook.proxy.request.category.CategoryDeleteParams;
+import com.accountbook.proxy.request.category.CategorySearchParams;
+import com.accountbook.proxy.request.specific_type.SpecificTypeAddParams;
+import com.accountbook.proxy.request.specific_type.SpecificTypeChangeParams;
+import com.accountbook.proxy.request.specific_type.SpecificTypeDeleteParams;
+import com.accountbook.proxy.request.specific_type.SpecificTypeSearchParams;
+
+import java.util.List;
+
+<span class="nc" id="L54">public class AccountBookServiceFactory implements BusinessFactory {</span>
+
+    /*----------账单相关------------ */
+    @Override
+    public BusinessService&lt;BillAddParams,BillSingleResponse&gt; createAddBillService() {
+<span class="nc" id="L59">        return new AddBillService();</span>
+    }
+
+    @Override
+    public BusinessService&lt;BillDeleteParams, BillDeleteResponse&gt; createDeleteBillService() {
+<span class="nc" id="L64">        return new DeleteBillService();</span>
+    }
+
+    @Override
+    public BusinessService&lt;BillChangeParams, BillSingleResponse&gt; createChangeBillService() {
+<span class="nc" id="L69">        return new ChangeBillService();</span>
+    }
+
+    @Override
+    public BusinessService&lt;BillSearchParams, BillListResponse&gt; createSearchBillService() {
+<span class="nc" id="L74">        return new SearchBillService();</span>
+    }
+
+    @Override
+    public BusinessService&lt;Bill, List&lt;Bill&gt;&gt; createStatisticBillService() {
+<span class="nc" id="L79">        return new StatisticBillService();</span>
+    }
+
+    @Override
+    public BusinessService&lt;String, Void&gt; createVisualService() {
+<span class="nc" id="L84">        return new VisualService();</span>
+    }
+
+    /*----------大类相关------------ */
+    @Override
+    public BusinessService&lt;CategoryAddParams,CategorySingleResponse&gt; createAddCategoryService(){
+<span class="nc" id="L90">        return new AddCategoryService();</span>
+    }
+
+    @Override
+    public BusinessService&lt;CategoryDeleteParams,CategoryDeleteResponse&gt; createDeleteCategoryService(){
+<span class="nc" id="L95">        return new DeleteCategoryService();</span>
+    }
+
+    @Override
+    public BusinessService&lt;CategoryChangeParams,CategorySingleResponse&gt; createChangeCategoryService(){
+<span class="nc" id="L100">        return new ChangeCategoryService();</span>
+    }
+
+    @Override
+    public BusinessService&lt;CategorySearchParams,CategoryListResponse&gt; createSearchCategoryService(){
+<span class="nc" id="L105">        return new SearchCategoryService();</span>
+    }
+
+    /*----------具体类型相关----------- */
+    @Override
+    public BusinessService&lt;SpecificTypeAddParams,SpecificTypeSingleResponse&gt; createAddSpecificTypeService(){
+<span class="nc" id="L111">        return new AddSpecificTypeService();</span>
+    }
+
+    @Override
+    public BusinessService&lt;SpecificTypeDeleteParams,SpecificTypeDeleteResponse&gt; createDeleteSpecificTypeService(){
+<span class="nc" id="L116">        return new DeleteSpecificTypeService();</span>
+    }
+
+    @Override
+    public BusinessService&lt;SpecificTypeChangeParams,SpecificTypeSingleResponse&gt; createChangeSpecificTypeService(){
+<span class="nc" id="L121">        return new ChangeSpecificTypeService(); </span>
+    }
+
+    @Override
+    public BusinessService&lt;SpecificTypeSearchParams,SpecificTypeListResponse&gt; createSearchSpecificTypeService(){
+<span class="nc" id="L126">        return new SearchSpecificTypeService();</span>
+    }
+
+    /*----------预算相关------------ */
+    @Override
+    public BusinessService&lt;BudgetAddParams, BudgetSingleResponse&gt; createAddBudgetService() {
+<span class="nc" id="L132">        return new AddBudgetService();</span>
+    }
+
+    @Override
+    public BusinessService&lt;BudgetDeleteParams, BudgetDeleteResponse&gt; createDeleteBudgetService() {
+<span class="nc" id="L137">        return new DeleteBudgetService();</span>
+    }
+
+    @Override
+    public BusinessService&lt;BudgetChangeParams, BudgetSingleResponse&gt; createChangeBudgetService() {
+<span class="nc" id="L142">        return new ChangeBudgetService();</span>
+    }
+
+
+    @Override
+    public BusinessService&lt;BudgetSearchParams, BudgetListResponse&gt; createSearchBudgetService() {
+<span class="nc" id="L148">        return new SearchBudgetService();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

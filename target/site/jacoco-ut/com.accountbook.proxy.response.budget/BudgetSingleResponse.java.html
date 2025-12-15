@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BudgetSingleResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.proxy.response.budget</a> &gt; <span class="el_source">BudgetSingleResponse.java</span></div><h1>BudgetSingleResponse.java</h1><pre class="source lang-java linenums">package com.accountbook.proxy.response.budget;
+
+import com.accountbook.backend.storage.entity.Budget;
+import java.math.BigDecimal;
+
+/**
+ * 单条预算详情响应：适配新增/修改/单查场景
+ */
+<span class="nc" id="L9">public class BudgetSingleResponse {</span>
+    // 预算ID（前端后续删除/修改需用，核心标识）
+    private Integer budgetId;
+    // 预算月份（前端核心展示字段，格式：YYYY-MM）
+    private String month;
+    // 关联的大类ID（前端展示分类名称时需用）
+    private Integer categoryId;
+    // 总预算金额（前端核心配置与展示字段）
+    private BigDecimal totalBudget;
+    // 实际支出金额（后端自动计算，前端展示用）
+    private BigDecimal spent;
+    // 剩余预算金额（后端自动计算，前端核心展示字段）
+    private BigDecimal remaining;
+
+    // Getter + Setter（仅保留基础访问方法）
+<span class="nc" id="L24">    public Integer getBudgetId() { return budgetId; }</span>
+<span class="nc" id="L25">    public void setBudgetId(Integer budgetId) { this.budgetId = budgetId; }</span>
+<span class="nc" id="L26">    public String getMonth() { return month; }</span>
+<span class="nc" id="L27">    public void setMonth(String month) { this.month = month; }</span>
+<span class="nc" id="L28">    public Integer getCategoryId() { return categoryId; }</span>
+<span class="nc" id="L29">    public void setCategoryId(Integer categoryId) { this.categoryId = categoryId; }</span>
+<span class="nc" id="L30">    public BigDecimal getTotalBudget() { return totalBudget; }</span>
+<span class="nc" id="L31">    public void setTotalBudget(BigDecimal totalBudget) { this.totalBudget = totalBudget; }</span>
+<span class="nc" id="L32">    public BigDecimal getSpent() { return spent; }</span>
+<span class="nc" id="L33">    public void setSpent(BigDecimal spent) { this.spent = spent; }</span>
+<span class="nc" id="L34">    public BigDecimal getRemaining() { return remaining; }</span>
+<span class="nc" id="L35">    public void setRemaining(BigDecimal remaining) { this.remaining = remaining; }</span>
+
+    /**
+     * 静态转换方法：从 Budget 实体构建 BudgetSingleResponse
+     * @param budget 数据库查询得到的 Budget 实体
+     * @return 转换后的预算详情响应对象
+     * @throws IllegalArgumentException 当输入 Budget 为 null 时抛出
+     */
+    public static BudgetSingleResponse fromBudget(Budget budget) {
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        if (budget == null) {</span>
+<span class="nc" id="L45">            throw new IllegalArgumentException(&quot;Budget 实体不能为空，无法转换为 BudgetSingleResponse&quot;);</span>
+        }
+
+<span class="nc" id="L48">        BudgetSingleResponse response = new BudgetSingleResponse();</span>
+        // 字段一一映射（与Budget实体字段对应，包含主键ID）
+<span class="nc" id="L50">        response.setBudgetId(budget.getId());</span>
+<span class="nc" id="L51">        response.setMonth(budget.getMonth());</span>
+<span class="nc" id="L52">        response.setCategoryId(budget.getCategoryId());</span>
+<span class="nc" id="L53">        response.setTotalBudget(budget.getTotalBudget());</span>
+<span class="nc" id="L54">        response.setSpent(budget.getSpent());</span>
+<span class="nc" id="L55">        response.setRemaining(budget.getRemaining());</span>
+
+<span class="nc" id="L57">        return response;</span>
+    }
+
+    /**
+     * 格式化字符串（供列表拼接使用）
+     */
+    public String getFormattedString() {
+<span class="nc" id="L64">        StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L65">        sb.append(&quot;├─ 预算ID：&quot;).append(budgetId).append(&quot;\n&quot;)</span>
+<span class="nc" id="L66">          .append(&quot;├─ 月份：&quot;).append(month).append(&quot;\n&quot;)</span>
+<span class="nc" id="L67">          .append(&quot;├─ 分类ID：&quot;).append(categoryId).append(&quot;\n&quot;)</span>
+<span class="nc" id="L68">          .append(&quot;├─ 总预算：&quot;).append(totalBudget).append(&quot;\n&quot;)</span>
+<span class="nc" id="L69">          .append(&quot;├─ 实际支出：&quot;).append(spent).append(&quot;\n&quot;)</span>
+<span class="nc" id="L70">          .append(&quot;└─ 剩余预算：&quot;).append(remaining).append(&quot;\n&quot;);</span>
+<span class="nc" id="L71">        return sb.toString();</span>
+    }
+
+    /**
+     * 打印单条预算详情
+     */
+    public void printSelf() {
+<span class="nc" id="L78">        StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L79">        sb.append(&quot;BudgetSingleResponse 详情：\n&quot;)</span>
+<span class="nc" id="L80">          .append(getFormattedString());</span>
+<span class="nc" id="L81">        System.out.println(sb.toString());</span>
+<span class="nc" id="L82">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

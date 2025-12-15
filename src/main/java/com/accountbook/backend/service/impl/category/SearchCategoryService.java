@@ -102,4 +102,5 @@ public class SearchCategoryService implements BusinessService<CategorySearchPara
         return params.getCategoryId() == null &&
                (params.getNameKey() == null || params.getNameKey().trim().isEmpty());
     }
+    
 }

@@ -174,4 +174,5 @@ public class BudgetRequestHelper extends BaseRequestHelper {
         FrontendRequest<BudgetSearchParams> request = new FrontendRequest<>(RequestType.SEARCH_BUDGET, emptyParams);
         return parseResponse(sendRequest(request));
     }
+
 }

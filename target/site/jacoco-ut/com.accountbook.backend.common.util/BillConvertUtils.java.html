@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BillConvertUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.backend.common.util</a> &gt; <span class="el_source">BillConvertUtils.java</span></div><h1>BillConvertUtils.java</h1><pre class="source lang-java linenums">package com.accountbook.backend.common.util;
+
+import com.accountbook.backend.common.exception.BusinessServiceException;
+import com.accountbook.backend.storage.entity.Bill;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+
+/**
+ * Bill实体转换工具类：提供 Map ↔ Bill 的转换方法（时间字段用String存储）
+ * 静态方法设计，无需实例化，供各服务类直接调用
+ */
+<span class="nc" id="L18">public class BillConvertUtils {</span>
+    // 数据库时间字段格式（根据实际数据库存储格式调整，如&quot;yyyy-MM-dd HH:mm:ss&quot;）
+<span class="fc" id="L20">    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm:ss&quot;);</span>
+    // 空值提示常量（统一空值异常信息）
+    private static final String NULL_FIELD_MSG = &quot;%s不能为空（数据库主键/必选字段）&quot;;
+
+    /**
+     * 单条 Map 转 Bill 实体
+     * @param billMap 数据库查询返回的 Map（键为列名，值为字段值）
+     * @return 转换后的 Bill 实体
+     * @throws BusinessServiceException 转换失败时抛出业务异常
+     */
+    public static Bill mapToBill(Map&lt;String, Object&gt; billMap) {
+        // 1. 校验输入Map
+<span class="pc bpc" id="L32" title="1 of 4 branches missed.">        if (billMap == null || billMap.isEmpty()) {</span>
+<span class="fc" id="L33">            throw new BusinessServiceException(&quot;map to bill failed：输入Map为空，无法转换&quot;);</span>
+        }
+
+<span class="fc" id="L36">        Bill bill = new Bill();</span>
+        try {
+            // 2. 字段赋值（按数据库列名映射，需与Bill实体字段对应）
+            // 账单ID（必选字段，主键非空）
+<span class="fc" id="L40">            Integer id = getIntegerValue(billMap, &quot;id&quot;, &quot;账单ID&quot;);</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">            if (id == null) {</span>
+<span class="fc" id="L42">                throw new BusinessServiceException(String.format(NULL_FIELD_MSG, &quot;账单ID&quot;));</span>
+            }
+<span class="fc" id="L44">            bill.setId(id);</span>
+
+            // 账单时间（必选字段，String类型存储，校验格式）
+<span class="fc" id="L47">            String billTime = getTimeStringValue(billMap, &quot;bill_time&quot;, &quot;账单时间&quot;);</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">            if (billTime == null) {</span>
+<span class="fc" id="L49">                throw new BusinessServiceException(String.format(NULL_FIELD_MSG, &quot;账单时间&quot;));</span>
+            }
+<span class="fc" id="L51">            bill.setTime(billTime); // 实体字段为String类型，直接赋值</span>
+
+            // 收支类型（必选字段，-1=支出，1=收入）
+<span class="fc" id="L54">            Integer type = getIntegerValue(billMap, &quot;type&quot;, &quot;收支类型&quot;);</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">            if (type == null) {</span>
+<span class="fc" id="L56">                throw new BusinessServiceException(String.format(NULL_FIELD_MSG, &quot;收支类型&quot;));</span>
+            }
+            // 校验收支类型合法性
+<span class="fc bfc" id="L59" title="All 4 branches covered.">            if (type != -1 &amp;&amp; type != 1) {</span>
+<span class="fc" id="L60">                throw new BusinessServiceException(&quot;收支类型值非法：&quot; + type + &quot;，仅支持-1（支出）或1（收入）&quot;);</span>
+            }
+<span class="fc" id="L62">            bill.setType(type);</span>
+
+            // 大类ID（必选字段）
+<span class="fc" id="L65">            Integer categoryId = getIntegerValue(billMap, &quot;category_id&quot;, &quot;大类ID&quot;);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">            if (categoryId == null) {</span>
+<span class="fc" id="L67">                throw new BusinessServiceException(String.format(NULL_FIELD_MSG, &quot;大类ID&quot;));</span>
+            }
+<span class="fc" id="L69">            bill.setCategoryId(categoryId);</span>
+
+            // 具体类型ID（必选字段）
+<span class="fc" id="L72">            Integer specificTypeId = getIntegerValue(billMap, &quot;specific_type_id&quot;, &quot;具体类型ID&quot;);</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">            if (specificTypeId == null) {</span>
+<span class="fc" id="L74">                throw new BusinessServiceException(String.format(NULL_FIELD_MSG, &quot;具体类型ID&quot;));</span>
+            }
+<span class="fc" id="L76">            bill.setSpecificTypeId(specificTypeId);</span>
+
+            // 金额（必选字段，DECIMAL类型，避免精度丢失）
+<span class="fc" id="L79">            BigDecimal amount = getBigDecimalValue(billMap, &quot;amount&quot;, &quot;金额&quot;);</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">            if (amount == null) {</span>
+<span class="fc" id="L81">                throw new BusinessServiceException(String.format(NULL_FIELD_MSG, &quot;金额&quot;));</span>
+            }
+            // 校验金额大于0
+<span class="fc bfc" id="L84" title="All 2 branches covered.">            if (amount.compareTo(BigDecimal.ZERO) &lt;= 0) {</span>
+<span class="fc" id="L85">                throw new BusinessServiceException(&quot;金额非法：&quot; + amount + &quot;，需大于0&quot;);</span>
+            }
+<span class="fc" id="L87">            bill.setAmount(amount);</span>
+
+            // 备注（可选字段，允许为null）
+<span class="fc" id="L90">            bill.setRemark(getStringValue(billMap, &quot;remark&quot;, &quot;备注&quot;));</span>
+
+            // 若Bill实体有其他字段（如create_time、update_time），补充以下格式的赋值
+            // bill.setCreateTime(getTimeStringValue(billMap, &quot;create_time&quot;, &quot;创建时间&quot;));
+
+<span class="fc" id="L95">        } catch (BusinessServiceException e) {</span>
+            // 业务异常直接抛出
+<span class="fc" id="L97">            throw e;</span>
+<span class="nc" id="L98">        } catch (Exception e) {</span>
+            // 其他异常包装为业务异常，明确错误原因并携带异常链
+<span class="nc" id="L100">            throw new BusinessServiceException(&quot;map to bill failed：转换异常，原因：&quot; + e.getMessage());</span>
+<span class="fc" id="L101">        }</span>
+
+<span class="fc" id="L103">        return bill;</span>
+    }
+
+    /**
+     * 批量 Map 转 Bill 实体列表
+     * @param billMapList 数据库查询返回的 Map 列表
+     * @return 转换后的 Bill 实体列表（空列表而非null，避免空指针）
+     */
+    public static List&lt;Bill&gt; mapListToBillList(List&lt;Map&lt;String, Object&gt;&gt; billMapList) {
+<span class="nc" id="L112">        List&lt;Bill&gt; billList = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L113" title="All 4 branches missed.">        if (billMapList == null || billMapList.isEmpty()) {</span>
+<span class="nc" id="L114">            return billList;</span>
+        }
+
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        for (Map&lt;String, Object&gt; map : billMapList) {</span>
+            try {
+<span class="nc" id="L119">                billList.add(mapToBill(map));</span>
+<span class="nc" id="L120">            } catch (Exception e) {</span>
+                // 单条转换失败不影响整体，打印日志后跳过（补充Map索引，便于定位问题）
+<span class="nc" id="L122">                int index = billMapList.indexOf(map);</span>
+<span class="nc" id="L123">                System.err.printf(&quot;map list to bill list failed：索引[%d]的单条数据转换失败，Map：%s，原因：%s%n&quot;,</span>
+<span class="nc" id="L124">                        index, map, e.getMessage());</span>
+<span class="nc" id="L125">            }</span>
+<span class="nc" id="L126">        }</span>
+<span class="nc" id="L127">        return billList;</span>
+    }
+
+    // ========================== 私有辅助方法：处理字段类型转换 ==========================
+    /**
+     * 获取Integer类型字段值
+     * @param map 数据Map
+     * @param key 列名
+     * @param fieldName 字段描述（用于异常提示）
+     * @return Integer值（允许为null，若数据库字段可空）
+     */
+    private static Integer getIntegerValue(Map&lt;String, Object&gt; map, String key, String fieldName) {
+<span class="fc" id="L139">        Object value = map.get(key);</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L141">            return null;</span>
+        }
+        // 兼容所有数字类型（Long、Short、Byte等）
+<span class="fc bfc" id="L144" title="All 2 branches covered.">        if (value instanceof Number) {</span>
+<span class="fc" id="L145">            return ((Number) value).intValue();</span>
+        }
+<span class="fc bfc" id="L147" title="All 2 branches covered.">        if (value instanceof String) {</span>
+<span class="fc" id="L148">            String strValue = ((String) value).trim();</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">            if (strValue.isEmpty()) {</span>
+<span class="fc" id="L150">                return null; // 空字符串视为null</span>
+            }
+            try {
+<span class="fc" id="L153">                return Integer.parseInt(strValue);</span>
+<span class="fc" id="L154">            } catch (NumberFormatException e) {</span>
+<span class="fc" id="L155">                throw new BusinessServiceException(fieldName + &quot;格式错误：&quot; + value + &quot;，需为整数&quot;);</span>
+            }
+        }
+        // 简化类型名称，提升异常可读性
+<span class="fc" id="L159">        String actualType = value.getClass().getSimpleName();</span>
+<span class="fc" id="L160">        throw new BusinessServiceException(fieldName + &quot;类型错误：&quot; + actualType + &quot;，不支持转换为Integer&quot;);</span>
+    }
+
+    /**
+     * 获取BigDecimal类型字段值（金额专用）
+     * @param map 数据Map
+     * @param key 列名
+     * @param fieldName 字段描述（用于异常提示）
+     * @return BigDecimal值（允许为null，若数据库字段可空）
+     */
+    private static BigDecimal getBigDecimalValue(Map&lt;String, Object&gt; map, String key, String fieldName) {
+<span class="fc" id="L171">        Object value = map.get(key);</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L173">            return null;</span>
+        }
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        if (value instanceof BigDecimal) {</span>
+<span class="fc" id="L176">            return (BigDecimal) value;</span>
+        }
+<span class="fc bfc" id="L178" title="All 2 branches covered.">        if (value instanceof String) {</span>
+<span class="fc" id="L179">            String strValue = ((String) value).trim();</span>
+<span class="fc bfc" id="L180" title="All 2 branches covered.">            if (strValue.isEmpty()) {</span>
+<span class="fc" id="L181">                return null; // 空字符串视为null</span>
+            }
+            try {
+<span class="fc" id="L184">                return new BigDecimal(strValue);</span>
+<span class="fc" id="L185">            } catch (NumberFormatException e) {</span>
+<span class="fc" id="L186">                throw new BusinessServiceException(fieldName + &quot;格式错误：&quot; + value + &quot;，需为数字（支持整数/小数）&quot;);</span>
+            }
+        }
+        // 兼容所有数字类型，避免浮点精度丢失
+<span class="fc bfc" id="L190" title="All 2 branches covered.">        if (value instanceof Number) {</span>
+<span class="fc" id="L191">            return new BigDecimal(value.toString());</span>
+        }
+        // 简化类型名称，提升异常可读性
+<span class="fc" id="L194">        String actualType = value.getClass().getSimpleName();</span>
+<span class="fc" id="L195">        throw new BusinessServiceException(fieldName + &quot;类型错误：&quot; + actualType + &quot;，不支持转换为BigDecimal&quot;);</span>
+    }
+
+    /**
+     * 获取String类型的时间字段值（时间专用，校验格式）
+     * @param map 数据Map
+     * @param key 列名
+     * @param fieldName 字段描述（用于异常提示）
+     * @return 格式化后的时间字符串（允许为null，若数据库字段可空）
+     */
+    private static String getTimeStringValue(Map&lt;String, Object&gt; map, String key, String fieldName) {
+<span class="fc" id="L206">        Object value = map.get(key);</span>
+<span class="fc bfc" id="L207" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L208">            return null;</span>
+        }
+        // 直接获取String类型时间
+        String timeStr;
+<span class="fc bfc" id="L212" title="All 2 branches covered.">        if (value instanceof String) {</span>
+<span class="fc" id="L213">            timeStr = ((String) value).trim();</span>
+<span class="fc bfc" id="L214" title="All 2 branches covered.">            if (timeStr.isEmpty()) {</span>
+<span class="fc" id="L215">                return null; // 空字符串视为null</span>
+            }
+<span class="fc bfc" id="L217" title="All 2 branches covered.">        } else if (value instanceof LocalDateTime) {</span>
+            // 兼容数据库返回LocalDateTime的场景，转为目标格式字符串
+<span class="fc" id="L219">            timeStr = ((LocalDateTime) value).format(TIME_FORMATTER);</span>
+        } else {
+            // 其他类型不支持
+<span class="fc" id="L222">            String actualType = value.getClass().getSimpleName();</span>
+<span class="fc" id="L223">            throw new BusinessServiceException(fieldName + &quot;类型错误：&quot; + actualType + &quot;，不支持转换为时间字符串&quot;);</span>
+        }
+
+        // 校验时间格式是否符合要求
+        try {
+<span class="fc" id="L228">            LocalDateTime.parse(timeStr, TIME_FORMATTER);</span>
+<span class="fc" id="L229">        } catch (DateTimeParseException e) {</span>
+<span class="fc" id="L230">            String example = TIME_FORMATTER.format(LocalDateTime.now());</span>
+<span class="fc" id="L231">            throw new BusinessServiceException(fieldName + &quot;格式错误：&quot; + timeStr + &quot;，需符合格式：&quot; + example);</span>
+<span class="fc" id="L232">        }</span>
+
+<span class="fc" id="L234">        return timeStr;</span>
+    }
+
+    /**
+     * 获取String类型字段值
+     * @param map 数据Map
+     * @param key 列名
+     * @param fieldName 字段描述（用于异常提示）
+     * @return String值（允许为null，若数据库字段可空）
+     */
+    private static String getStringValue(Map&lt;String, Object&gt; map, String key, String fieldName) {
+<span class="fc" id="L245">        Object value = map.get(key);</span>
+<span class="fc bfc" id="L246" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L247">            return null;</span>
+        }
+        // 处理空字符串场景
+<span class="fc" id="L250">        String strValue = value.toString().trim();</span>
+<span class="fc bfc" id="L251" title="All 2 branches covered.">        return strValue.isEmpty() ? null : strValue;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BillTableComponent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.frontend.component.panel</a> &gt; <span class="el_source">BillTableComponent.java</span></div><h1>BillTableComponent.java</h1><pre class="source lang-java linenums">package com.accountbook.frontend.component.panel;
+
+import javax.swing.*;
+
+import com.accountbook.proxy.response.bill.BillSingleResponse;
+
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.FontMetrics;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 账单表格组件：表头固定在顶部，与数据列严格对齐
+ */
+public class BillTableComponent extends JPanel {
+    private final Map&lt;Integer, BillSingleResponse&gt; bills;
+<span class="nc" id="L21">    private final Map&lt;Integer, ActionListener&gt; detailCallbacks = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L22">    private final Map&lt;Integer, ActionListener&gt; editCallbacks = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L23">    private final Map&lt;Integer, ActionListener&gt; deleteCallbacks = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L24">    private int baseFontSize = 13;</span>
+    private JPanel contentPanel;
+
+<span class="nc" id="L27">    public BillTableComponent(Map&lt;Integer, BillSingleResponse&gt; bills) {</span>
+<span class="nc" id="L28">        this.bills = bills;</span>
+<span class="nc" id="L29">        setLayout(new BorderLayout());</span>
+<span class="nc" id="L30">        setBorder(BorderFactory.createEmptyBorder());</span>
+<span class="nc" id="L31">        initTable();</span>
+<span class="nc" id="L32">        addResizeListener();</span>
+<span class="nc" id="L33">    }</span>
+
+    private void addResizeListener() {
+<span class="nc" id="L36">        addComponentListener(new ComponentAdapter() {</span>
+            @Override
+            public void componentResized(ComponentEvent e) {
+<span class="nc" id="L39">                baseFontSize = Math.max(10, Math.min(18, getWidth() / 90));</span>
+<span class="nc" id="L40">                refreshTable();</span>
+<span class="nc" id="L41">            }</span>
+        });
+<span class="nc" id="L43">    }</span>
+
+    private void refreshTable() {
+<span class="nc" id="L46">        removeAll();</span>
+<span class="nc" id="L47">        initTable();</span>
+<span class="nc" id="L48">        revalidate();</span>
+<span class="nc" id="L49">        repaint();</span>
+<span class="nc" id="L50">    }</span>
+
+    public void setCallback(int billId, ActionListener detail, ActionListener edit, ActionListener delete) {
+<span class="nc" id="L53">        detailCallbacks.put(billId, detail);</span>
+<span class="nc" id="L54">        editCallbacks.put(billId, edit);</span>
+<span class="nc" id="L55">        deleteCallbacks.put(billId, delete);</span>
+<span class="nc" id="L56">    }</span>
+
+    private void initTable() {
+<span class="nc" id="L59">        contentPanel = new JPanel();</span>
+<span class="nc" id="L60">        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));</span>
+<span class="nc" id="L61">        contentPanel.setAlignmentX(LEFT_ALIGNMENT);</span>
+<span class="nc" id="L62">        int padding = Math.max(5, getWidth() / 100);</span>
+<span class="nc" id="L63">        contentPanel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));</span>
+
+        // 1. 先添加表头（固定在顶部）
+<span class="nc" id="L66">        JPanel headerRow = createHeaderRow();</span>
+<span class="nc" id="L67">        contentPanel.add(headerRow);</span>
+<span class="nc" id="L68">        contentPanel.add(Box.createVerticalStrut(padding)); // 表头与数据行之间的间距</span>
+
+        // 2. 再添加数据行（表头下方）
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        for (Map.Entry&lt;Integer, BillSingleResponse&gt; entry : bills.entrySet()) {</span>
+<span class="nc" id="L72">            int rowIndex = entry.getKey();</span>
+<span class="nc" id="L73">            BillSingleResponse bill = entry.getValue();</span>
+<span class="nc" id="L74">            JPanel dataRow = createDataRow(rowIndex, bill);</span>
+<span class="nc" id="L75">            contentPanel.add(dataRow);</span>
+<span class="nc" id="L76">            contentPanel.add(Box.createVerticalStrut(padding)); // 数据行之间的间距</span>
+<span class="nc" id="L77">        }</span>
+
+<span class="nc" id="L79">        JScrollPane scrollPane = new JScrollPane(contentPanel);</span>
+<span class="nc" id="L80">        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);</span>
+<span class="nc" id="L81">        scrollPane.setBorder(BorderFactory.createEmptyBorder());</span>
+<span class="nc" id="L82">        add(scrollPane, BorderLayout.CENTER);</span>
+<span class="nc" id="L83">    }</span>
+
+    // 创建表头行（单独提取方法，便于维护）
+    private JPanel createHeaderRow() {
+<span class="nc" id="L87">        int headerHeight = baseFontSize * 4; // 表头行高（略小于数据行，突出层级）</span>
+<span class="nc" id="L88">        JPanel headerRow = new JPanel(new GridLayout(1, 7, 1, 1));</span>
+<span class="nc" id="L89">        headerRow.setBackground(new Color(240, 240, 240)); // 表头灰色背景，与数据行区分</span>
+<span class="nc" id="L90">        headerRow.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));</span>
+<span class="nc" id="L91">        headerRow.setPreferredSize(new Dimension(0, headerHeight));</span>
+
+        // 表头文本（明确列含义）
+<span class="nc" id="L94">        String[] headers = {</span>
+            &quot;索引&quot;, 
+            &quot;时间&quot;, 
+            &quot;支出/收入&quot;, 
+            &quot;类型&quot;, 
+            &quot;金额/元&quot;, 
+            &quot;备注&quot;, 
+            &quot;操作&quot;
+        };
+
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        for (String header : headers) {</span>
+<span class="nc" id="L105">            JLabel label = new JLabel(header, SwingConstants.CENTER);</span>
+<span class="nc" id="L106">            label.setFont(new Font(&quot;微软雅黑&quot;, Font.BOLD, baseFontSize)); // 表头加粗</span>
+<span class="nc" id="L107">            label.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L108">            label.setVerticalAlignment(SwingConstants.CENTER); // 垂直居中</span>
+<span class="nc" id="L109">            headerRow.add(label);</span>
+        }
+<span class="nc" id="L111">        return headerRow;</span>
+    }
+
+    // 创建数据行（单独提取方法，分离表头与数据逻辑）
+    private JPanel createDataRow(int rowIndex, BillSingleResponse bill) {
+<span class="nc" id="L116">        int rowHeight = baseFontSize * 5; // 数据行高（略大于表头）</span>
+<span class="nc" id="L117">        JPanel row = new JPanel(new GridLayout(1, 7, 1, 1));</span>
+<span class="nc" id="L118">        row.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));</span>
+<span class="nc" id="L119">        row.setPreferredSize(new Dimension(0, rowHeight));</span>
+<span class="nc" id="L120">        row.setBackground(Color.WHITE);</span>
+
+        // 1. 索引列
+<span class="nc" id="L123">        JLabel indexLabel = new JLabel(String.format(&quot;%03d&quot;, rowIndex + 1), SwingConstants.CENTER);</span>
+<span class="nc" id="L124">        indexLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, baseFontSize));</span>
+<span class="nc" id="L125">        indexLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L126">        indexLabel.setVerticalAlignment(SwingConstants.CENTER);</span>
+<span class="nc" id="L127">        row.add(indexLabel);</span>
+
+        // 2. 时间列
+<span class="nc" id="L130">        JLabel timeLabel = new JLabel(</span>
+<span class="nc" id="L131">            &quot;&lt;html&gt;&lt;center&gt;&quot; + bill.getBillTime().replace(&quot; &quot;, &quot;&lt;br/&gt;&quot;) + &quot;&lt;/center&gt;&lt;/html&gt;&quot;,</span>
+            SwingConstants.CENTER
+        );
+<span class="nc" id="L134">        timeLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, baseFontSize));</span>
+<span class="nc" id="L135">        timeLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L136">        timeLabel.setVerticalAlignment(SwingConstants.CENTER);</span>
+<span class="nc" id="L137">        row.add(timeLabel);</span>
+
+        // 3. 收支类型列
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        boolean isExpense = bill.getType() == -1;</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        JLabel typeLabel = new JLabel(isExpense ? &quot;支出&quot; : &quot;收入&quot;, SwingConstants.CENTER);</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        typeLabel.setForeground(isExpense ? Color.RED : new Color(0, 160, 0));</span>
+<span class="nc" id="L143">        typeLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, baseFontSize));</span>
+<span class="nc" id="L144">        typeLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L145">        typeLabel.setVerticalAlignment(SwingConstants.CENTER);</span>
+<span class="nc" id="L146">        row.add(typeLabel);</span>
+
+        // 4. 分类列
+<span class="nc" id="L149">        String cat = getCategoryName(bill.getCategoryId());</span>
+<span class="nc" id="L150">        JLabel catLabel = new JLabel(</span>
+            &quot;&lt;html&gt;&lt;center&gt;&quot; + cat + &quot;&lt;/center&gt;&lt;/html&gt;&quot;,
+            SwingConstants.CENTER
+        );
+<span class="nc" id="L154">        catLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, baseFontSize));</span>
+<span class="nc" id="L155">        catLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L156">        catLabel.setVerticalAlignment(SwingConstants.CENTER);</span>
+<span class="nc" id="L157">        row.add(catLabel);</span>
+
+        // 5. 金额列
+<span class="nc" id="L160">        JLabel amountLabel = new JLabel(bill.getAmount().toPlainString() + &quot; 元&quot;, SwingConstants.CENTER);</span>
+<span class="nc" id="L161">        amountLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, baseFontSize));</span>
+<span class="nc" id="L162">        amountLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L163">        amountLabel.setVerticalAlignment(SwingConstants.CENTER);</span>
+<span class="nc" id="L164">        row.add(amountLabel);</span>
+
+        // 6. 备注列
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        String remark = bill.getRemark() != null ? bill.getRemark() : &quot;无&quot;;</span>
+<span class="nc" id="L168">        EllipsisLabel remarkLabel = new EllipsisLabel(remark);</span>
+<span class="nc" id="L169">        remarkLabel.setHorizontalAlignment(SwingConstants.CENTER);</span>
+<span class="nc" id="L170">        remarkLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, baseFontSize));</span>
+<span class="nc" id="L171">        remarkLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L172">        remarkLabel.setVerticalAlignment(SwingConstants.CENTER);</span>
+<span class="nc" id="L173">        row.add(remarkLabel);</span>
+
+        // 7. 操作列
+<span class="nc" id="L176">        JPanel actionPanel = new JPanel();</span>
+<span class="nc" id="L177">        actionPanel.setLayout(new BoxLayout(actionPanel, BoxLayout.Y_AXIS));</span>
+<span class="nc" id="L178">        actionPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));</span>
+<span class="nc" id="L179">        actionPanel.setBackground(Color.WHITE);</span>
+<span class="nc" id="L180">        actionPanel.setPreferredSize(new Dimension(0, rowHeight));</span>
+
+<span class="nc" id="L182">        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, baseFontSize/2, 0));</span>
+<span class="nc" id="L183">        btnPanel.setAlignmentX(CENTER_ALIGNMENT);</span>
+<span class="nc" id="L184">        btnPanel.setBackground(Color.WHITE);</span>
+
+        // 详情按钮
+<span class="nc" id="L187">        JButton detailBtn = new JButton(&quot;详情&quot;);</span>
+<span class="nc" id="L188">        detailBtn.setIcon(loadIcon(&quot;/icons/search.png&quot;));</span>
+<span class="nc" id="L189">        styleActionButton(detailBtn);</span>
+<span class="nc" id="L190">        detailBtn.addActionListener(e -&gt; {</span>
+<span class="nc" id="L191">            System.out.println(&quot;点击了账单[&quot; + bill.getBillId() + &quot;]的详情按钮&quot;);</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">            if (detailCallbacks.containsKey(bill.getBillId())) {</span>
+<span class="nc" id="L193">                detailCallbacks.get(bill.getBillId()).actionPerformed(e);</span>
+            }
+<span class="nc" id="L195">        });</span>
+<span class="nc" id="L196">        btnPanel.add(detailBtn);</span>
+
+        // 修改按钮
+<span class="nc" id="L199">        JButton editBtn = new JButton(&quot;修改&quot;);</span>
+<span class="nc" id="L200">        editBtn.setIcon(loadIcon(&quot;/icons/edit.png&quot;));</span>
+<span class="nc" id="L201">        styleActionButton(editBtn);</span>
+<span class="nc" id="L202">        editBtn.addActionListener(e -&gt; {</span>
+<span class="nc" id="L203">            System.out.println(&quot;点击了账单[&quot; + bill.getBillId() + &quot;]的修改按钮&quot;);</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">            if (editCallbacks.containsKey(bill.getBillId())) {</span>
+<span class="nc" id="L205">                editCallbacks.get(bill.getBillId()).actionPerformed(e);</span>
+            }
+<span class="nc" id="L207">        });</span>
+<span class="nc" id="L208">        btnPanel.add(editBtn);</span>
+
+        // 删除按钮
+<span class="nc" id="L211">        JButton deleteBtn = new JButton(&quot;删除&quot;);</span>
+<span class="nc" id="L212">        deleteBtn.setIcon(loadIcon(&quot;/icons/delete.png&quot;));</span>
+<span class="nc" id="L213">        deleteBtn.setForeground(Color.RED);</span>
+<span class="nc" id="L214">        styleActionButton(deleteBtn);</span>
+<span class="nc" id="L215">        deleteBtn.addActionListener(e -&gt; {</span>
+<span class="nc" id="L216">            System.out.println(&quot;点击了账单[&quot; + bill.getBillId() + &quot;]的删除按钮&quot;);</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">            if (deleteCallbacks.containsKey(bill.getBillId())) {</span>
+<span class="nc" id="L218">                deleteCallbacks.get(bill.getBillId()).actionPerformed(e);</span>
+            }
+<span class="nc" id="L220">        });</span>
+<span class="nc" id="L221">        btnPanel.add(deleteBtn);</span>
+
+        // 微调垂直位置，与其他列文本对齐
+<span class="nc" id="L224">        actionPanel.add(Box.createVerticalGlue());</span>
+<span class="nc" id="L225">        actionPanel.add(btnPanel);</span>
+<span class="nc" id="L226">        actionPanel.add(Box.createVerticalStrut(baseFontSize / 2));</span>
+
+<span class="nc" id="L228">        row.add(actionPanel);</span>
+<span class="nc" id="L229">        return row;</span>
+    }
+
+    private ImageIcon loadIcon(String path) {
+        try {
+<span class="nc" id="L234">            ImageIcon icon = new ImageIcon(getClass().getResource(path));</span>
+<span class="nc" id="L235">            int iconSize = baseFontSize + 2;</span>
+<span class="nc" id="L236">            Image scaledImage = icon.getImage().getScaledInstance(iconSize, iconSize, Image.SCALE_SMOOTH);</span>
+<span class="nc" id="L237">            return new ImageIcon(scaledImage);</span>
+<span class="nc" id="L238">        } catch (Exception e) {</span>
+<span class="nc" id="L239">            return null;</span>
+        }
+    }
+
+    private void styleActionButton(JButton btn) {
+<span class="nc" id="L244">        btn.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, baseFontSize));</span>
+<span class="nc" id="L245">        btn.setBorderPainted(false);</span>
+<span class="nc" id="L246">        btn.setContentAreaFilled(false);</span>
+<span class="nc" id="L247">        btn.setForeground(new Color(0, 100, 255));</span>
+<span class="nc" id="L248">        int btnVPadding = baseFontSize / 2;</span>
+<span class="nc" id="L249">        int btnHPadding = baseFontSize / 3;</span>
+<span class="nc" id="L250">        btn.setBorder(BorderFactory.createEmptyBorder(btnVPadding, btnHPadding, btnVPadding, btnHPadding));</span>
+<span class="nc" id="L251">        btn.setVerticalAlignment(SwingConstants.CENTER);</span>
+<span class="nc" id="L252">        btn.setHorizontalAlignment(SwingConstants.CENTER);</span>
+<span class="nc" id="L253">    }</span>
+
+    private String getCategoryName(int categoryId) {
+<span class="nc bnc" id="L256" title="All 7 branches missed.">        switch (categoryId) {</span>
+<span class="nc" id="L257">            case 1: return &quot;购物&quot;;</span>
+<span class="nc" id="L258">            case 2: return &quot;饮食外卖&quot;;</span>
+<span class="nc" id="L259">            case 3: return &quot;交通&quot;;</span>
+<span class="nc" id="L260">            case 4: return &quot;娱乐&quot;;</span>
+<span class="nc" id="L261">            case 5: return &quot;工资收入&quot;;</span>
+<span class="nc" id="L262">            case 6: return &quot;其他收入&quot;;</span>
+<span class="nc" id="L263">            default: return &quot;未知分类&quot;;</span>
+        }
+    }
+
+    public static class EllipsisLabel extends JLabel {
+        public EllipsisLabel(String text) {
+<span class="nc" id="L269">            super(text);</span>
+<span class="nc" id="L270">            setToolTipText(text);</span>
+<span class="nc" id="L271">        }</span>
+
+        @Override
+        protected void paintComponent(Graphics g) {
+<span class="nc" id="L275">            String fullText = getText();</span>
+<span class="nc bnc" id="L276" title="All 4 branches missed.">            if (fullText == null || fullText.isEmpty()) {</span>
+<span class="nc" id="L277">                super.paintComponent(g);</span>
+<span class="nc" id="L278">                return;</span>
+            }
+
+<span class="nc" id="L281">            FontMetrics fm = g.getFontMetrics(getFont());</span>
+<span class="nc" id="L282">            int availableWidth = getWidth() - getInsets().left - getInsets().right;</span>
+
+<span class="nc bnc" id="L284" title="All 2 branches missed.">            if (fm.stringWidth(fullText) &gt; availableWidth) {</span>
+<span class="nc" id="L285">                String ellipsis = &quot;…&quot;;</span>
+<span class="nc" id="L286">                int maxLen = fullText.length();</span>
+<span class="nc bnc" id="L287" title="All 4 branches missed.">                while (maxLen &gt; 0 &amp;&amp; fm.stringWidth(fullText.substring(0, maxLen) + ellipsis) &gt; availableWidth) {</span>
+<span class="nc" id="L288">                    maxLen--;</span>
+                }
+<span class="nc" id="L290">                super.setText(fullText.substring(0, maxLen) + ellipsis);</span>
+<span class="nc" id="L291">            } else {</span>
+<span class="nc" id="L292">                super.setText(fullText);</span>
+            }
+
+<span class="nc" id="L295">            super.paintComponent(g);</span>
+<span class="nc" id="L296">            super.setText(fullText);</span>
+<span class="nc" id="L297">        }</span>
+    }
+
+    public static void main(String[] args) {
+<span class="nc" id="L301">        SwingUtilities.invokeLater(() -&gt; {</span>
+<span class="nc" id="L302">            Map&lt;Integer, BillSingleResponse&gt; mockBills = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L303">            mockBills.put(0, new BillSingleResponse() {</span>
+                @Override
+<span class="nc" id="L305">                public Integer getBillId() { return 1001; }</span>
+                @Override
+<span class="nc" id="L307">                public String getBillTime() { return &quot;2025-10-17 21:23&quot;; }</span>
+                @Override
+<span class="nc" id="L309">                public Integer getType() { return -1; }</span>
+                @Override
+<span class="nc" id="L311">                public Integer getCategoryId() { return 2; }</span>
+                @Override
+<span class="nc" id="L313">                public BigDecimal getAmount() { return new BigDecimal(&quot;35.5&quot;); }</span>
+                @Override
+<span class="nc" id="L315">                public String getRemark() { return &quot;夜宵吃了顿火锅&quot;; }</span>
+            });
+<span class="nc" id="L317">            mockBills.put(1, new BillSingleResponse() {</span>
+                @Override
+<span class="nc" id="L319">                public Integer getBillId() { return 1002; }</span>
+                @Override
+<span class="nc" id="L321">                public String getBillTime() { return &quot;2025-10-16 12:36&quot;; }</span>
+                @Override
+<span class="nc" id="L323">                public Integer getType() { return -1; }</span>
+                @Override
+<span class="nc" id="L325">                public Integer getCategoryId() { return 2; }</span>
+                @Override
+<span class="nc" id="L327">                public BigDecimal getAmount() { return new BigDecimal(&quot;17.3&quot;); }</span>
+                @Override
+<span class="nc" id="L329">                public String getRemark() { return &quot;买汉堡&quot;; }</span>
+            });
+
+<span class="nc" id="L332">            JFrame frame = new JFrame(&quot;账单表格（表头固定顶部版）&quot;);</span>
+<span class="nc" id="L333">            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);</span>
+<span class="nc" id="L334">            frame.setSize(1200, 400);</span>
+<span class="nc" id="L335">            frame.setLocationRelativeTo(null);</span>
+
+<span class="nc" id="L337">            BillTableComponent table = new BillTableComponent(mockBills);</span>
+<span class="nc" id="L338">            frame.setContentPane(table);</span>
+<span class="nc" id="L339">            frame.setVisible(true);</span>
+<span class="nc" id="L340">        });</span>
+<span class="nc" id="L341">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

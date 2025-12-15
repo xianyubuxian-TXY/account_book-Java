@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BillDAOImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.backend.storage.dao.impl</a> &gt; <span class="el_source">BillDAOImpl.java</span></div><h1>BillDAOImpl.java</h1><pre class="source lang-java linenums">package com.accountbook.backend.storage.dao.impl;
+
+import com.accountbook.backend.common.exception.BusinessServiceException;
+import com.accountbook.backend.common.util.BillConvertUtils;
+import com.accountbook.backend.common.util.NameConvertUtils;
+import com.accountbook.backend.storage.dao.BaseDAO;
+import com.accountbook.backend.storage.dao.BillDAO;
+import com.accountbook.backend.storage.entity.Bill;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+/*具体BillDAO实现 */
+<span class="nc" id="L15">public class BillDAOImpl extends BaseDAO implements BillDAO{</span>
+
+    // 表名常量（与数据库表名一致）
+    private static final String TABLE_BILL = &quot;bill&quot;;
+
+    /**
+     * 新增账单
+     * @param billMap 账单字段映射（key:数据库字段名，如&quot;bill_time&quot;；value:对应值）
+     * @return 主键id
+     */
+    public int addBill(Map&lt;String, Object&gt; billMap) {
+        try{
+<span class="nc" id="L27">            return super.insert(TABLE_BILL, billMap);</span>
+<span class="nc" id="L28">        } catch(Exception e)</span>
+        {
+<span class="nc" id="L30">            System.err.println(e);</span>
+<span class="nc" id="L31">            return -1;</span>
+        }
+    }
+
+    /**
+     * 根据条件更新账单
+     * @param fieldMap 要更新的字段-值映射
+     * @param condition 条件（如&quot;id=?&quot;）
+     * @param params 条件参数
+     * @return 影响行数
+     */
+    public int updateBill(Map&lt;String, Object&gt; fieldMap, String condition, Object... params) {
+        try{
+<span class="nc" id="L44">            return super.update(TABLE_BILL, fieldMap, condition, params);</span>
+<span class="nc" id="L45">        }catch(Exception e)</span>
+        {
+<span class="nc" id="L47">            System.err.println(e);</span>
+<span class="nc" id="L48">            return -1;</span>
+        }
+    }
+
+    /**
+     * 根据条件删除账单
+     * @param condition 条件（如&quot;id=?&quot;）
+     * @param params 条件参数
+     * @return 影响行数
+     */
+    public int deleteBill(String condition, Object... params) {
+        try{
+<span class="nc" id="L60">            return super.delete(TABLE_BILL, condition, params);</span>
+<span class="nc" id="L61">        }catch(Exception e)</span>
+        {
+<span class="nc" id="L63">            System.err.println(e);</span>
+<span class="nc" id="L64">            return -1;</span>
+        }
+    }
+
+    /**
+     * 单表查询账单（支持条件过滤）
+     * @param fields 要查询的字段（如&quot;id,amount&quot;）
+     * @param condition 条件（如&quot;category_id=?&quot;）
+     * @param params 条件参数
+     * @return 结果列表（Map&lt;字段名, 值&gt;）
+     */
+    public List&lt;Map&lt;String, Object&gt;&gt; queryBills(String fields, String condition, Object... params) {
+        try{
+<span class="nc" id="L77">            return super.query(TABLE_BILL, fields, condition, params);</span>
+<span class="nc" id="L78">        }catch(Exception e)</span>
+        {
+<span class="nc" id="L80">            System.err.println(e);</span>
+<span class="nc" id="L81">            return null;</span>
+        }
+    }
+
+    /**
+     * 关联查询账单（多表JOIN，如关联category和specific_type表）
+     * @param customSql 自定义关联查询SQL
+     * @param params SQL参数
+     * @return 结果列表（Map&lt;字段名, 值&gt;）
+     */
+    public List&lt;Map&lt;String, Object&gt;&gt; queryBillsWithJoin(String customSql, Object... params) {
+        try{
+<span class="nc" id="L93">            return super.queryByCustomSql(customSql, params);</span>
+<span class="nc" id="L94">        }catch(Exception e)</span>
+        {
+<span class="nc" id="L96">            System.err.println(e);</span>
+<span class="nc" id="L97">            return null;</span>
+        }
+    }
+
+    /**
+     * 新增实现：通过ID查询完整Bill实体
+     * 整合原BillByIdQueryUtils的核心逻辑
+     */
+    @Override
+    public Bill queryBillById(Integer billId) {
+        // 1. 校验ID合法性
+<span class="nc" id="L108">        validateBillId(billId);</span>
+
+        try {
+            // 2. 调用父类查询方法：查完整字段（*），条件为id=?
+<span class="nc" id="L112">            List&lt;Map&lt;String, Object&gt;&gt; mapList = super.query(</span>
+                TABLE_BILL,
+                &quot;*&quot;,  // 查询所有字段
+                &quot;id = ?&quot;,  // 条件：ID精确匹配
+                billId  // 参数：账单ID
+            );
+
+            // 3. 处理查询结果（无数据则抛异常）
+<span class="nc bnc" id="L120" title="All 4 branches missed.">            if (mapList == null || mapList.isEmpty()) {</span>
+<span class="nc" id="L121">                throw new BusinessServiceException(&quot;查询失败：未找到ID为&quot; + billId + &quot;的账单&quot;);</span>
+            }
+
+            // 4. 转换Map为Bill实体（复用转换工具类）
+<span class="nc" id="L125">            return BillConvertUtils.mapToBill(mapList.get(0));</span>
+
+<span class="nc" id="L127">        } catch (BusinessServiceException e) {</span>
+            // 业务异常直接抛出（已包含明确信息）
+<span class="nc" id="L129">            throw e;</span>
+<span class="nc" id="L130">        } catch (Exception e) {</span>
+            // 其他异常（如SQL异常）包装为业务异常
+<span class="nc" id="L132">            throw new BusinessServiceException(&quot;查询ID为&quot; + billId + &quot;的账单时发生系统异常：&quot; + e.getMessage());</span>
+        }
+    }
+
+    /**
+     * 通过ID删除账单（封装deleteBill方法，语义更明确）
+     * @param billId 账单ID（主键）
+     * @return 影响行数（1=删除成功，0=未找到对应账单，-1=删除失败）
+     */
+    @Override
+    public int deleteBillById(Integer billId) {
+        // 1. 校验ID合法性（复用已有的校验逻辑）
+<span class="nc" id="L144">        validateBillId(billId);</span>
+        try {
+            // 2. 调用已有的deleteBill方法，条件为&quot;id=?&quot;，参数为billId
+<span class="nc" id="L147">            return super.delete(TABLE_BILL, &quot;id = ?&quot;, billId);</span>
+<span class="nc" id="L148">        } catch (Exception e) {</span>
+<span class="nc" id="L149">            System.err.println(&quot;删除ID为&quot; + billId + &quot;的账单失败：&quot; + e.getMessage());</span>
+<span class="nc" id="L150">            return -1; // 异常时返回-1标识失败</span>
+        }
+    }
+
+    /**
+     * 以ID为条件修改账单（专门用于通过主键更新，语义明确）
+     * @param billId 账单主键ID（必填，正整数）
+     * @param fieldMap 要更新的字段-值映射（key:数据库字段名，value:新值）
+     * @return 影响行数（1=更新成功，0=未找到对应账单，-1=更新失败）
+     */
+    @Override
+    public int updateBillById(Integer billId, Map&lt;String, Object&gt; fieldMap) {
+        // 1. 校验账单ID合法性（复用已有校验逻辑）
+<span class="nc" id="L163">        validateBillId(billId);</span>
+        
+        // 2. 校验更新字段Map非空（避免无意义的更新操作）
+<span class="nc bnc" id="L166" title="All 4 branches missed.">        if (fieldMap == null || fieldMap.isEmpty()) {</span>
+<span class="nc" id="L167">            System.err.println(&quot;更新失败：至少需要指定一个待修改的字段&quot;);</span>
+<span class="nc" id="L168">            return -1;</span>
+        }
+        
+        try {
+            // 3. 调用已有的updateBill方法，条件固定为&quot;id=?&quot;，参数为billId
+<span class="nc" id="L173">            return super.update(TABLE_BILL, fieldMap, &quot;id = ?&quot;, billId);</span>
+<span class="nc" id="L174">        } catch (Exception e) {</span>
+<span class="nc" id="L175">            System.err.println(&quot;更新ID为&quot; + billId + &quot;的账单失败：&quot; + e.getMessage());</span>
+<span class="nc" id="L176">            return -1;</span>
+        }
+    }
+
+        /**
+     * 实现：查询所有账单（全字段），按时间由近到远排序
+     */
+    @Override
+    public List&lt;Bill&gt; queryAllBillsOrderByTimeDesc() {
+        try {
+            // 1. 构建SQL：查询所有字段，按bill_time（账单时间）倒序（DESC）
+<span class="nc" id="L187">            String sql = &quot;SELECT * FROM &quot; + TABLE_BILL + &quot; ORDER BY bill_time DESC&quot;;</span>
+
+            // 2. 执行查询（调用父类自定义SQL查询方法）
+<span class="nc" id="L190">            List&lt;Map&lt;String, Object&gt;&gt; mapList = super.queryByCustomSql(sql);</span>
+
+            // 3. 转换为Bill实体列表（空结果返回空列表，避免null）
+<span class="nc" id="L193">            List&lt;Bill&gt; billList = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L194" title="All 4 branches missed.">            if (mapList != null &amp;&amp; !mapList.isEmpty()) {</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">                for (Map&lt;String, Object&gt; map : mapList) {</span>
+<span class="nc" id="L196">                    billList.add(BillConvertUtils.mapToBill(map));</span>
+<span class="nc" id="L197">                }</span>
+            }
+
+<span class="nc" id="L200">            return billList;</span>
+
+<span class="nc" id="L202">        } catch (Exception e) {</span>
+            // 统一包装为业务异常，携带具体错误信息
+<span class="nc" id="L204">            throw new BusinessServiceException(&quot;查询所有账单（按时间倒序）失败：&quot; + e.getMessage());</span>
+        }
+    }
+
+    /**
+     * 按条件批量更新账单（实现接口方法）
+     * @param queryMap 筛选条件（key：Java属性名，如&quot;categoryId&quot;；value：对应值）
+     * @param updateMap 要更新的字段（key：Java属性名，如&quot;categoryId&quot;；value：新值）
+     * @return 受影响的行数（-1=失败，0=无匹配数据，≥1=成功更新的行数）
+     */
+    @Override
+    public int updateBillsByCondition(Map&lt;String, Object&gt; queryMap, Map&lt;String, Object&gt; updateMap) {
+        // 1. 校验更新字段非空（避免无效更新）
+<span class="nc bnc" id="L217" title="All 4 branches missed.">        if (updateMap == null || updateMap.isEmpty()) {</span>
+<span class="nc" id="L218">            System.err.println(&quot;批量更新失败：至少需要一个待更新的字段&quot;);</span>
+<span class="nc" id="L219">            return -1;</span>
+        }
+
+        try {
+            // 2. 转换updateMap：Java属性名 → 数据库字段名（生成fieldMap）
+<span class="nc" id="L224">            Map&lt;String, Object&gt; fieldMap = convertToDbFieldMap(updateMap);</span>
+
+            // 3. 处理queryMap：生成WHERE条件和参数
+<span class="nc" id="L227">            String condition = &quot;&quot;;</span>
+<span class="nc" id="L228">            List&lt;Object&gt; params = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L229" title="All 4 branches missed.">            if (queryMap != null &amp;&amp; !queryMap.isEmpty()) {</span>
+                // 3.1 转换查询条件的Java属性名为数据库字段名
+<span class="nc" id="L231">                List&lt;String&gt; conditionFragments = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">                for (Map.Entry&lt;String, Object&gt; entry : queryMap.entrySet()) {</span>
+<span class="nc" id="L233">                    String dbField = NameConvertUtils.camelToUnderline(entry.getKey());</span>
+<span class="nc" id="L234">                    conditionFragments.add(dbField + &quot; = ?&quot;); // 生成&quot;field = ?&quot;片段</span>
+<span class="nc" id="L235">                    params.add(entry.getValue()); // 收集条件参数值</span>
+<span class="nc" id="L236">                }</span>
+                // 3.2 拼接条件（如&quot;category_id = ? AND specific_type_id = ?&quot;）
+<span class="nc" id="L238">                condition = String.join(&quot; AND &quot;, conditionFragments);</span>
+            }
+
+            // 4. 调用父类update方法执行更新（复用BaseDAO的更新逻辑）
+            // 注意：BaseDAO的update方法参数为（表名，更新字段，条件，条件参数）
+<span class="nc" id="L243">            return super.update(TABLE_BILL, fieldMap, condition, params.toArray());</span>
+
+<span class="nc" id="L245">        } catch (Exception e) {</span>
+<span class="nc" id="L246">            System.err.println(&quot;批量更新账单失败：&quot; + e.getMessage());</span>
+<span class="nc" id="L247">            return -1; // 异常时返回-1标识失败</span>
+        }
+    }
+
+    /**
+     * 辅助方法：校验账单ID合法性（原BillByIdQueryUtils的校验逻辑）
+     */
+    private void validateBillId(Integer billId) {
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        if (billId == null) {</span>
+<span class="nc" id="L256">            throw new BusinessServiceException(&quot;账单ID不能为空&quot;);</span>
+        }
+<span class="nc bnc" id="L258" title="All 2 branches missed.">        if (billId &lt;= 0) {</span>
+<span class="nc" id="L259">            throw new BusinessServiceException(&quot;账单ID必须为正整数（当前值：&quot; + billId + &quot;）&quot;);</span>
+        }
+<span class="nc" id="L261">    }</span>
+
+        /**
+     * 辅助方法：将Java属性名的Map转换为数据库字段名的Map
+     * （如{categoryId:1} → {category_id:1}）
+     */
+    private Map&lt;String, Object&gt; convertToDbFieldMap(Map&lt;String, Object&gt; javaPropMap) {
+<span class="nc bnc" id="L268" title="All 2 branches missed.">        if (javaPropMap == null) {</span>
+<span class="nc" id="L269">            return null;</span>
+        }
+        // 遍历Map，转换key为数据库字段名
+<span class="nc" id="L272">        Map&lt;String, Object&gt; dbFieldMap = new java.util.HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        for (Map.Entry&lt;String, Object&gt; entry : javaPropMap.entrySet()) {</span>
+<span class="nc" id="L274">            String dbField = NameConvertUtils.camelToUnderline(entry.getKey());</span>
+<span class="nc" id="L275">            dbFieldMap.put(dbField, entry.getValue());</span>
+<span class="nc" id="L276">        }</span>
+<span class="nc" id="L277">        return dbFieldMap;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

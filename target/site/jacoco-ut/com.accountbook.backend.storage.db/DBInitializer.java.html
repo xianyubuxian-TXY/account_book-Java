@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DBInitializer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.backend.storage.db</a> &gt; <span class="el_source">DBInitializer.java</span></div><h1>DBInitializer.java</h1><pre class="source lang-java linenums">package com.accountbook.backend.storage.db;
+
+import java.sql.Connection;
+import java.sql.Statement;
+
+/*数据库初始化类 */
+<span class="nc" id="L7">public class DBInitializer {</span>
+    public static void init() {
+        try (
+            // 获取基础连接（仅连接服务器，未指定数据库）
+<span class="nc" id="L11">            Connection conn = DBUtil.getBaseConnection();</span>
+<span class="nc" id="L12">            Statement stmt = conn.createStatement()</span>
+        ) {
+
+            // 1. 创建数据库（在未指定库的连接上执行，无需依赖任何现有库）
+<span class="nc" id="L16">            stmt.executeUpdate(&quot;CREATE DATABASE IF NOT EXISTS account_book CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci&quot;);</span>
+            // 2. 切换到新创建的数据库
+<span class="nc" id="L18">            stmt.executeUpdate(&quot;USE account_book&quot;);</span>
+            // 3. 后续创建表、插入数据（此时已在 account_book 库中）
+<span class="nc" id="L20">            stmt.executeUpdate(&quot;&quot;&quot;</span>
+                CREATE TABLE IF NOT EXISTS category (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    name VARCHAR(20) NOT NULL COMMENT '大类名称',
+                    UNIQUE KEY uk_name (name)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            &quot;&quot;&quot;);
+
+<span class="nc" id="L28">            stmt.executeUpdate(&quot;&quot;&quot;</span>
+                CREATE TABLE IF NOT EXISTS specific_type (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    name VARCHAR(20) NOT NULL COMMENT '具体类型名称',
+                    category_id INT NOT NULL,
+                    FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE CASCADE,
+                    UNIQUE KEY uk_category_name (category_id, name)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            &quot;&quot;&quot;);
+
+<span class="nc" id="L38">            stmt.executeUpdate(&quot;&quot;&quot;</span>
+                CREATE TABLE IF NOT EXISTS bill (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    bill_time DATETIME NOT NULL,
+                    type TINYINT NOT NULL,
+                    category_id INT NOT NULL,
+                    specific_type_id INT NOT NULL,
+                    amount DECIMAL(10,2) NOT NULL,
+                    remark VARCHAR(100),
+                    FOREIGN KEY (category_id) REFERENCES category(id),
+                    FOREIGN KEY (specific_type_id) REFERENCES specific_type(id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            &quot;&quot;&quot;);
+
+<span class="nc" id="L52">            stmt.executeUpdate(&quot;&quot;&quot;</span>
+                CREATE TABLE IF NOT EXISTS budget (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    category_id INT NOT NULL,
+                    month VARCHAR(7) NOT NULL,
+                    total_budget DECIMAL(10,2) NOT NULL,
+                    spent DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                    remaining DECIMAL(10,2) NOT NULL,
+                    FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE CASCADE,
+                    UNIQUE KEY uk_category_month (category_id, month)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            &quot;&quot;&quot;);
+
+            // 初始化默认数据
+<span class="nc" id="L66">            stmt.executeUpdate(&quot;INSERT IGNORE INTO category (name) VALUES ('无')&quot;);</span>
+<span class="nc" id="L67">            stmt.executeUpdate(&quot;&quot;&quot;</span>
+                INSERT IGNORE INTO specific_type (name, category_id)
+                SELECT '无', id FROM category WHERE name = '无'
+            &quot;&quot;&quot;);
+
+<span class="nc" id="L72">            System.out.println(&quot;数据库和表初始化成功，已添加默认数据！&quot;);</span>
+
+<span class="nc" id="L74">        } catch (Exception e) {</span>
+<span class="nc" id="L75">            throw new RuntimeException(&quot;初始化数据库失败：&quot; + e.getMessage());</span>
+<span class="nc" id="L76">        }</span>
+<span class="nc" id="L77">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

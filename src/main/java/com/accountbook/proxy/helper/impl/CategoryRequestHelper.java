@@ -157,4 +157,112 @@ public class CategoryRequestHelper extends BaseRequestHelper {
         FrontendRequest<CategorySearchParams> request = new FrontendRequest<>(RequestType.SEARCH_CATEGORY, emptyParams);
         return parseResponse(sendRequest(request));
     }
+
+    public void func1(String newName2) {
+        String cleaned = newName2.trim();
+        System.out.println("Cleaned name: " + cleaned);
+    }
+
+    public void func2(String filePath) {
+        try {
+            java.io.FileInputStream fis = new java.io.FileInputStream(filePath);
+
+            byte[] buffer = new byte[128];
+            fis.read(buffer); 
+
+        } catch (Exception e) {
+        }
+    }
+
+    public void func3(java.io.OutputStream out) {
+        try {
+            java.io.PrintWriter writer = new java.io.PrintWriter(out);
+            writer.println("test");
+
+            writer.close();
+            out.close();
+
+        } catch (Exception e) {
+        }
+    }
+
+    public void func4(java.sql.ResultSet rs) {
+        try {
+            rs.close();
+            while (rs.next()) {
+                System.out.println(rs.getString(1));
+            }
+
+        } catch (Exception e) {
+        }
+    }
+
+    public void func5(String remark) {
+        char[] buffer = new char[10];
+        for (int i = 0; i < remark.length(); i++) {
+            buffer[i] = remark.charAt(i); 
+        }
+
+        System.out.println("Buffer content first char: " + buffer[0]);
+    }
+
+    public void func6(java.sql.Connection conn, String key) {
+        java.sql.Statement stmt = null;
+        java.sql.ResultSet rs = null;
+        try {
+            stmt = conn.createStatement();
+            String sql = "SELECT * FROM t_bill WHERE remark LIKE '%" + key + "%'";
+            System.out.println("Executing SQL: " + sql);
+
+            rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                System.out.println("Bill ID: " + rs.getInt("id"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (Exception ignored) {}
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (Exception ignored) {}
+        }
+    }
+
+    public int func7(int baseScore, int times) {
+        validateParamTrue(baseScore > 0, "基础分必须为正数");
+        validateParamTrue(times > 0, "倍数必须为正数");
+
+        int result = 0;
+        for (int i = 0; i < times; i++) {
+            result += baseScore * times;
+        }
+
+        return result;
+    }
+
+    public int func8(String name, int count) {
+        validateParamNotNull(name, "名称不能为空");
+
+        int length = name.length();
+        return length / count;
+    }
+
+    public void func9() {
+        int counter = 0;
+        while (true) {
+            counter++;
+        }
+    }
+
+    public void func10() {
+        String text = null;
+        int length = text.length();
+        System.out.println("Length: " + length);
+    }
 }

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DBUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.backend.storage.db</a> &gt; <span class="el_source">DBUtil.java</span></div><h1>DBUtil.java</h1><pre class="source lang-java linenums">package com.accountbook.backend.storage.db;
+
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+
+/*数据库工具类：读取配置文件并获取数据库连接 */
+public class DBUtil {
+<span class="nc" id="L12">    private static final Properties props = new Properties();</span>
+    // 目标业务数据库名（常量定义，便于维护）
+    private static final String TARGET_DB = &quot;account_book&quot;;
+
+<span class="nc" id="L16">    private DBUtil() {</span>
+<span class="nc" id="L17">        throw new AssertionError(&quot;工具类禁止实例化&quot;);</span>
+    }
+
+    public static Properties getProps() {
+<span class="nc" id="L21">        return props;</span>
+    }
+
+    static {
+<span class="nc" id="L25">        try (InputStream in = DBUtil.class.getClassLoader().getResourceAsStream(&quot;db.properties&quot;)) {</span>
+<span class="nc" id="L26">            props.load(in);</span>
+<span class="nc" id="L27">            Class.forName(props.getProperty(&quot;db.driver&quot;));</span>
+<span class="nc" id="L28">        } catch (Exception e) {</span>
+<span class="nc" id="L29">            throw new RuntimeException(&quot;数据库配置错误或驱动缺失：&quot; + e.getMessage());</span>
+<span class="nc" id="L30">        }</span>
+<span class="nc" id="L31">    }</span>
+
+        /**
+     * 获取基础连接（仅连接服务器，不指定数据库）
+     * 适用于数据库初始化（创建库、切换库等操作）
+     */
+    public static Connection getBaseConnection() throws SQLException {
+<span class="nc" id="L38">        String url = props.getProperty(&quot;db.url&quot;);</span>
+<span class="nc" id="L39">        String user = props.getProperty(&quot;db.user&quot;);</span>
+<span class="nc" id="L40">        String password = props.getProperty(&quot;db.password&quot;);</span>
+<span class="nc" id="L41">        return DriverManager.getConnection(url, user, password);</span>
+    }
+
+    // 获取基础连接（仅连接服务器，不指定数据库）
+    public static Connection getAccountBookConnection() throws SQLException {
+        // 先获取基础连接（连接服务器）
+<span class="nc" id="L47">        Connection conn = getBaseConnection();</span>
+        // 强制切换到 account_book 数据库
+<span class="nc" id="L49">        try (Statement stmt = conn.createStatement()) {</span>
+<span class="nc" id="L50">            stmt.executeUpdate(&quot;USE &quot; + TARGET_DB);</span>
+        }
+<span class="nc" id="L52">        return conn;</span>
+    }
+
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,103 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+accountbook,com.accountbook.proxy.response.category,CategoryListResponse,111,0,12,0,24,0,11,0,5,0
+accountbook,com.accountbook.proxy.response.category,CategorySingleResponse,82,0,4,0,22,0,10,0,8,0
+accountbook,com.accountbook.proxy.response.category,CategoryDeleteResponse,33,0,0,0,12,0,5,0,5,0
+accountbook,com.accountbook.proxy.common,ProxyHandler,45,0,2,0,15,0,7,0,6,0
+accountbook,com.accountbook.proxy.response.budget,BudgetDeleteResponse,9,0,0,0,4,0,2,0,2,0
+accountbook,com.accountbook.proxy.response.budget,BudgetSingleResponse,149,0,2,0,36,0,17,0,16,0
+accountbook,com.accountbook.proxy.response.budget,BudgetListResponse,111,0,12,0,24,0,11,0,5,0
+accountbook,com.accountbook.backend.service.impl.specific_type,DeleteSpecificTypeService,163,0,22,0,40,0,13,0,2,0
+accountbook,com.accountbook.backend.service.impl.specific_type,SearchSpecificTypeService,162,0,24,0,42,0,16,0,3,0
+accountbook,com.accountbook.backend.service.impl.specific_type,ChangeSpecificTypeService,40,0,4,0,10,0,4,0,2,0
+accountbook,com.accountbook.backend.service.impl.specific_type,AddSpecificTypeService,41,0,2,0,12,0,3,0,2,0
+accountbook,com.accountbook.proxy.request.category,CategorySearchParams,68,0,6,0,23,0,12,0,9,0
+accountbook,com.accountbook.proxy.request.category,CategoryChangeParams,57,0,2,0,20,0,9,0,8,0
+accountbook,com.accountbook.proxy.request.category,CategoryAddParams,28,0,0,0,9,0,5,0,5,0
+accountbook,com.accountbook.proxy.request.category,CategoryDeleteParams,28,0,0,0,9,0,5,0,5,0
+accountbook,com.accountbook.backend.storage.dao.factory,DAOFactory,28,0,0,0,9,0,6,0,6,0
+accountbook,com.accountbook.backend.service.impl.bill,SearchBillService,241,0,44,0,69,0,29,0,3,0
+accountbook,com.accountbook.backend.service.impl.bill,StatisticBillService,11,0,0,0,4,0,2,0,2,0
+accountbook,com.accountbook.backend.service.impl.bill,DeleteBillService,36,0,4,0,8,0,4,0,2,0
+accountbook,com.accountbook.backend.service.impl.bill,AddBillService,34,0,2,0,8,0,3,0,2,0
+accountbook,com.accountbook.backend.service.impl.bill,VisualService,11,0,0,0,4,0,2,0,2,0
+accountbook,com.accountbook.backend.service.impl.bill,ChangeBillService,42,0,4,0,10,0,4,0,2,0
+accountbook,com.accountbook.frontend.component.page,HomePage.new MouseAdapter() {...},26,0,0,0,3,0,3,0,3,0
+accountbook,com.accountbook.frontend.component.page,HomePage.new ComponentAdapter() {...},22,0,0,0,5,0,2,0,2,0
+accountbook,com.accountbook.frontend.component.page,SearchPage,12,0,0,0,4,0,2,0,2,0
+accountbook,com.accountbook.frontend.component.page,BudgetPage,12,0,0,0,4,0,2,0,2,0
+accountbook,com.accountbook.frontend.component.page,RecordPage.ComboItem,12,0,0,0,2,0,2,0,2,0
+accountbook,com.accountbook.frontend.component.page,HomePage,1166,0,52,0,233,0,47,0,21,0
+accountbook,com.accountbook.frontend.component.page,RecordPage,1362,0,98,0,300,0,82,0,33,0
+accountbook,com.accountbook.frontend.component.page,RecordPage.new FocusAdapter() {...},40,0,4,0,9,0,5,0,3,0
+accountbook,com.accountbook.frontend.component.page,VisualPage,12,0,0,0,4,0,2,0,2,0
+accountbook,com.accountbook.frontend.component.page,SettingPage,12,0,0,0,4,0,2,0,2,0
+accountbook,com.accountbook.frontend.component.page,StatisticsPage,12,0,0,0,4,0,2,0,2,0
+accountbook,com.accountbook,Application,31,0,0,0,12,0,3,0,3,0
+accountbook,com.accountbook.frontend,MainPage,571,0,12,0,142,0,39,0,33,0
+accountbook,com.accountbook.proxy.helper,BaseRequestHelper,56,0,10,0,17,0,11,0,6,0
+accountbook,com.accountbook.backend.service.impl.budget,ChangeBudgetService,42,0,4,0,10,0,4,0,2,0
+accountbook,com.accountbook.backend.service.impl.budget,SearchBudgetService,181,0,28,0,50,0,19,0,3,0
+accountbook,com.accountbook.backend.service.impl.budget,DeleteBudgetService,35,0,4,0,8,0,4,0,2,0
+accountbook,com.accountbook.backend.service.impl.budget,AddBudgetService,34,0,2,0,9,0,3,0,2,0
+accountbook,com.accountbook.backend.service.impl.category,DeleteCategoryService,316,0,38,0,66,0,23,0,4,0
+accountbook,com.accountbook.backend.service.impl.category,ChangeCategoryService,40,0,4,0,10,0,4,0,2,0
+accountbook,com.accountbook.backend.service.impl.category,AddCategoryService,53,0,8,0,13,0,6,0,2,0
+accountbook,com.accountbook.backend.service.impl.category,SearchCategoryService,150,0,21,0,38,0,14,0,3,0
+accountbook,com.accountbook.frontend.component.dialog,BillEditDialog,508,0,34,0,103,0,27,0,10,0
+accountbook,com.accountbook.frontend.component.dialog,BillEditDialog.new DefaultListCellRenderer() {...},24,0,2,0,5,0,3,0,2,0
+accountbook,com.accountbook.frontend.component.dialog,BillEditDialog.new DefaultListCellRenderer() {...},24,0,2,0,5,0,3,0,2,0
+accountbook,com.accountbook.proxy.helper.factory,RequestHelperFactory,123,0,8,0,34,0,12,0,8,0
+accountbook,com.accountbook.backend.storage.db,DBUtil,64,0,0,0,19,0,5,0,5,0
+accountbook,com.accountbook.backend.storage.db,DBSql,569,0,58,0,117,0,39,0,10,0
+accountbook,com.accountbook.backend.storage.db,DBInitializer,53,0,0,0,16,0,2,0,2,0
+accountbook,com.accountbook.proxy,ServiceProxy,188,0,37,0,51,0,31,0,4,0
+accountbook,com.accountbook.proxy,FrontendRequest,33,0,0,0,13,0,5,0,5,0
+accountbook,com.accountbook.proxy,FrontendRequest.RequestType,117,0,0,0,20,0,1,0,1,0
+accountbook,com.accountbook.proxy,BackendResponse,42,0,0,0,11,0,7,0,7,0
+accountbook,com.accountbook.backend.factory,AccountBookServiceFactory,75,0,0,0,19,0,19,0,19,0
+accountbook,com.accountbook.backend.storage.dao.impl,CategoryDAOImpl,221,0,18,0,54,0,19,0,10,0
+accountbook,com.accountbook.backend.storage.dao.impl,BillDAOImpl,333,0,32,0,84,0,29,0,13,0
+accountbook,com.accountbook.backend.storage.dao.impl,BudgetDAOImpl,283,0,28,0,62,0,26,0,12,0
+accountbook,com.accountbook.backend.storage.dao.impl,SpecificTypeDAOImpl,256,0,22,0,60,0,22,0,11,0
+accountbook,com.accountbook.backend.storage.entity,SpecificType,36,0,0,0,12,0,8,0,8,0
+accountbook,com.accountbook.backend.storage.entity,Bill,120,34,2,0,26,16,14,8,13,8
+accountbook,com.accountbook.backend.storage.entity,Budget,87,0,0,0,28,0,15,0,15,0
+accountbook,com.accountbook.backend.storage.entity,Category,26,0,0,0,9,0,6,0,6,0
+accountbook,com.accountbook.proxy.helper.impl,BudgetRequestHelper,418,0,54,0,74,0,35,0,8,0
+accountbook,com.accountbook.proxy.helper.impl,BillRequestHelper,448,0,32,0,71,0,26,0,10,0
+accountbook,com.accountbook.proxy.helper.impl,SpecificTypeRequestHelper,393,0,60,0,68,0,37,0,7,0
+accountbook,com.accountbook.proxy.helper.impl,CategoryRequestHelper,501,0,54,0,117,0,44,0,17,0
+accountbook,com.accountbook.proxy.request.bill,BillAddParams,108,0,0,0,29,0,15,0,15,0
+accountbook,com.accountbook.proxy.request.bill,BillDeleteParams,13,0,0,0,5,0,3,0,3,0
+accountbook,com.accountbook.proxy.request.bill,BillSearchParams,242,0,20,0,64,0,37,0,27,0
+accountbook,com.accountbook.proxy.request.bill,BillChangeParams,151,0,12,0,37,0,24,0,18,0
+accountbook,com.accountbook.proxy.response.specific_type,SpecificTypeDeleteResponse,62,0,0,0,19,0,7,0,7,0
+accountbook,com.accountbook.proxy.response.specific_type,SpecificTypeListResponse,111,0,12,0,24,0,11,0,5,0
+accountbook,com.accountbook.proxy.response.specific_type,SpecificTypeSingleResponse,112,0,4,0,32,0,13,0,11,0
+accountbook,com.accountbook.backend.common.exception,BusinessServiceException,0,4,0,0,0,2,0,1,0,1
+accountbook,com.accountbook.backend.common.util,NameConvertUtils,51,0,8,0,11,0,6,0,2,0
+accountbook,com.accountbook.backend.common.util,BudgetConvertUtils,352,0,44,0,87,0,29,0,7,0
+accountbook,com.accountbook.backend.common.util,CategoryConvertUtils,215,0,30,0,52,0,20,0,5,0
+accountbook,com.accountbook.backend.common.util,BillConvertUtils,66,378,7,51,15,89,6,31,2,6
+accountbook,com.accountbook.backend.common.util,SpecificTypeConvertUtils,246,0,34,0,58,0,22,0,5,0
+accountbook,com.accountbook.backend.common.util,TimeUtils,25,0,2,0,8,0,5,0,4,0
+accountbook,com.accountbook.backend.storage.dao,BaseDAO,590,0,62,0,122,0,40,0,9,0
+accountbook,com.accountbook.proxy.response.bill,BillListResponse,111,0,12,0,24,0,11,0,5,0
+accountbook,com.accountbook.proxy.response.bill,BillSingleResponse,183,0,6,0,40,0,21,0,18,0
+accountbook,com.accountbook.proxy.response.bill,BillDeleteResponse,9,0,0,0,4,0,2,0,2,0
+accountbook,com.accountbook.frontend.component.panel,BillTableComponent.new BillSingleResponse() {...},21,0,0,0,7,0,7,0,7,0
+accountbook,com.accountbook.frontend.component.panel,BillTableComponent.new ComponentAdapter() {...},22,0,0,0,4,0,2,0,2,0
+accountbook,com.accountbook.frontend.component.panel,BillTableComponent.new BillSingleResponse() {...},21,0,0,0,7,0,7,0,7,0
+accountbook,com.accountbook.frontend.component.panel,LeftNavigationPanel,403,0,6,0,76,0,15,0,12,0
+accountbook,com.accountbook.frontend.component.panel,BillTableComponent,870,0,25,0,174,0,30,0,15,0
+accountbook,com.accountbook.frontend.component.panel,LeftNavigationPanel.MenuData,12,0,0,0,3,0,1,0,1,0
+accountbook,com.accountbook.frontend.component.panel,LeftNavigationPanel.new MouseAdapter() {...},36,0,4,0,5,0,5,0,3,0
+accountbook,com.accountbook.frontend.component.panel,BillTableComponent.EllipsisLabel,78,0,10,0,20,0,7,0,2,0
+accountbook,com.accountbook.proxy.request.specific_type,SpecificTypeChangeParams,76,0,4,0,26,0,12,0,10,0
+accountbook,com.accountbook.proxy.request.specific_type,SpecificTypeDeleteParams,29,0,0,0,9,0,5,0,5,0
+accountbook,com.accountbook.proxy.request.specific_type,SpecificTypeSearchParams,96,0,8,0,33,0,16,0,12,0
+accountbook,com.accountbook.proxy.request.specific_type,SpecificTypeAddParams,44,0,0,0,13,0,7,0,7,0
+accountbook,com.accountbook.proxy.request.budget,BudgetChangeParams,94,0,6,0,25,0,15,0,12,0
+accountbook,com.accountbook.proxy.request.budget,BudgetAddParams,73,0,0,0,19,0,9,0,9,0
+accountbook,com.accountbook.proxy.request.budget,BudgetSearchParams,137,0,16,0,43,0,24,0,16,0
+accountbook,com.accountbook.proxy.request.budget,BudgetDeleteParams,13,0,0,0,6,0,3,0,3,0

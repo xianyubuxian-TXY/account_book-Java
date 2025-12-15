@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchCategoryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.backend.service.impl.category</a> &gt; <span class="el_source">SearchCategoryService.java</span></div><h1>SearchCategoryService.java</h1><pre class="source lang-java linenums">package com.accountbook.backend.service.impl.category;
+
+import com.accountbook.backend.common.util.CategoryConvertUtils; // 假设存在分类转换工具类
+import com.accountbook.backend.service.BusinessService;
+import com.accountbook.backend.storage.dao.CategoryDAO;
+import com.accountbook.backend.storage.dao.factory.DAOFactory;
+import com.accountbook.backend.storage.entity.Category;
+import com.accountbook.proxy.request.category.CategorySearchParams;
+import com.accountbook.proxy.response.category.CategoryListResponse;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 分类查询业务实现类（参考SearchBillService设计风格）
+ * 注意：类名修正为SearchCategoryService（原拼写&quot;SearchCagetoryService&quot;为笔误）
+ */
+<span class="nc" id="L19">public class SearchCategoryService implements BusinessService&lt;CategorySearchParams, CategoryListResponse&gt; {</span>
+
+    // 注入分类DAO（通过工厂获取，与账单查询服务保持一致）
+<span class="nc" id="L22">    private final CategoryDAO categoryDAO = DAOFactory.getCategoryDAO();</span>
+
+    @Override
+    public CategoryListResponse execute(CategorySearchParams params) throws Exception {
+<span class="nc" id="L26">        System.out.println(&quot;执行分类查询业务&quot;);</span>
+
+        // 处理参数为空的情况（直接查询所有并按ID正序）
+<span class="nc bnc" id="L29" title="All 4 branches missed.">        if (params == null || isAllParamsNull(params)) {</span>
+<span class="nc" id="L30">            System.out.println(&quot;无有效查询条件，默认返回所有分类（按ID由小到大）&quot;);</span>
+<span class="nc" id="L31">            List&lt;Category&gt; allCategories = categoryDAO.queryAllCategoriesOrderByIdAsc();</span>
+<span class="nc" id="L32">            return CategoryListResponse.fromCategoryList(allCategories);</span>
+        }
+
+        // 1. 将查询参数转为 Map
+<span class="nc" id="L36">        Map&lt;String, Object&gt; paramMap = params.toMap();</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        if (paramMap.isEmpty()) {</span>
+            // 所有参数均为null（但params不为null），默认返回所有分类
+<span class="nc" id="L39">            System.out.println(&quot;所有查询条件均为null，默认返回所有分类（按ID由小到大）&quot;);</span>
+<span class="nc" id="L40">            List&lt;Category&gt; allCategories = categoryDAO.queryAllCategoriesOrderByIdAsc();</span>
+<span class="nc" id="L41">            return CategoryListResponse.fromCategoryList(allCategories);</span>
+        }
+
+        // 2. 动态拼接 SQL 条件和参数列表
+<span class="nc" id="L45">        StringBuilder condition = new StringBuilder();</span>
+<span class="nc" id="L46">        List&lt;Object&gt; sqlParams = new ArrayList&lt;&gt;();</span>
+
+        // 遍历 Map 生成 AND 连接的条件（分类查询仅涉及ID精确查询和名称模糊查询）
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        for (Map.Entry&lt;String, Object&gt; entry : paramMap.entrySet()) {</span>
+<span class="nc" id="L50">            String key = entry.getKey();</span>
+<span class="nc" id="L51">            Object value = entry.getValue();</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">            if (value == null) {</span>
+<span class="nc" id="L53">                continue; // 跳过 null 值条件</span>
+            }
+
+            // 根据字段类型拼接条件（对应CategorySearchParams的toMap字段）
+<span class="nc bnc" id="L57" title="All 3 branches missed.">            switch (key) {</span>
+                case &quot;id&quot;:
+                    // 分类ID：精确匹配
+<span class="nc" id="L60">                    condition.append(&quot;id = ? AND &quot;);</span>
+<span class="nc" id="L61">                    sqlParams.add(value);</span>
+<span class="nc" id="L62">                    break;</span>
+                case &quot;name_like&quot;:
+                    // 名称关键字：模糊查询（前后加%）
+<span class="nc" id="L65">                    condition.append(&quot;name LIKE CONCAT('%', ?, '%') AND &quot;);</span>
+<span class="nc" id="L66">                    sqlParams.add(value);</span>
+<span class="nc" id="L67">                    break;</span>
+                default:
+                    // 忽略未知字段
+                    break;
+            }
+<span class="nc" id="L72">        }</span>
+
+        // 3. 处理条件字符串（移除末尾多余的 &quot;AND &quot;）
+<span class="nc" id="L75">        String finalCondition = &quot;&quot;;</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (condition.length() &gt; 0) {</span>
+<span class="nc" id="L77">            finalCondition = condition.substring(0, condition.length() - 4);</span>
+        } else {
+            // 理论上不会走到这里，因paramMap非空且已过滤null
+<span class="nc" id="L80">            System.out.println(&quot;条件处理后为空，默认返回所有分类（按ID由小到大）&quot;);</span>
+<span class="nc" id="L81">            List&lt;Category&gt; allCategories = categoryDAO.queryAllCategoriesOrderByIdAsc();</span>
+<span class="nc" id="L82">            return CategoryListResponse.fromCategoryList(allCategories);</span>
+        }
+
+        // 4. 调用 DAO 查询完整字段（字段参数传 &quot;*&quot;）
+<span class="nc" id="L86">        List&lt;Map&lt;String, Object&gt;&gt; mapList = categoryDAO.queryCategories(&quot;*&quot;, finalCondition, sqlParams.toArray());</span>
+
+        // 5. 将 Map 列表转为 Category 实体列表（复用转换工具类）
+<span class="nc" id="L89">        List&lt;Category&gt; categoryList = CategoryConvertUtils.mapListToCategoryList(mapList);</span>
+
+        // 6. 将实体列表转为 CategoryListResponse
+<span class="nc" id="L92">        return CategoryListResponse.fromCategoryList(categoryList);</span>
+    }
+
+    /**
+     * 判断查询参数是否全为null（辅助方法）
+     * @param params 分类查询参数对象
+     * @return true=所有参数都为null；false=存在非null参数
+     */
+    private boolean isAllParamsNull(CategorySearchParams params) {
+        // 检查分类查询的核心字段是否全为null
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        return params.getCategoryId() == null &amp;&amp;</span>
+<span class="nc bnc" id="L103" title="All 4 branches missed.">               (params.getNameKey() == null || params.getNameKey().trim().isEmpty());</span>
+    }
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

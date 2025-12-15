@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BaseRequestHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.proxy.helper</a> &gt; <span class="el_source">BaseRequestHelper.java</span></div><h1>BaseRequestHelper.java</h1><pre class="source lang-java linenums">package com.accountbook.proxy.helper;
+
+import com.accountbook.proxy.BackendResponse;
+import com.accountbook.proxy.FrontendRequest;
+import com.accountbook.proxy.ServiceProxy;
+
+/**
+ * 请求助手基类：新增响应解析方法
+ */
+<span class="nc" id="L10">public abstract class BaseRequestHelper {</span>
+    protected ServiceProxy serviceProxy;
+
+    /*注入ServiceProxy */
+    public void init(ServiceProxy proxy) {
+<span class="nc bnc" id="L15" title="All 2 branches missed.">        if (proxy == null) {</span>
+<span class="nc" id="L16">            throw new IllegalArgumentException(&quot;ServiceProxy 不能为空，初始化失败&quot;);</span>
+        }
+<span class="nc" id="L18">        this.serviceProxy = proxy;</span>
+<span class="nc" id="L19">    }</span>
+
+    protected &lt;T, R&gt; BackendResponse&lt;R&gt; sendRequest(FrontendRequest&lt;T&gt; request) {
+<span class="nc bnc" id="L22" title="All 2 branches missed.">        if (serviceProxy == null) {</span>
+<span class="nc" id="L23">            throw new IllegalStateException(&quot;Helper 未初始化！请先调用 init 方法&quot;);</span>
+        }
+<span class="nc" id="L25">        return serviceProxy.handleRequest(request);</span>
+    }
+
+    // 通用参数校验方法（不变）
+    protected void validateParamNotNull(Object param, String errorMsg) {
+<span class="nc bnc" id="L30" title="All 2 branches missed.">        if (param == null) {</span>
+<span class="nc" id="L31">            throw new IllegalArgumentException(errorMsg);</span>
+        }
+<span class="nc" id="L33">    }</span>
+
+    protected void validateParamTrue(boolean condition, String errorMsg) {
+<span class="nc bnc" id="L36" title="All 2 branches missed.">        if (!condition) {</span>
+<span class="nc" id="L37">            throw new IllegalArgumentException(errorMsg);</span>
+        }
+<span class="nc" id="L39">    }</span>
+
+    /**
+     * 响应解析工具方法：解析BackendResponse，返回业务数据
+     * 失败时抛出运行时异常（携带失败消息），成功时返回data
+     * @param response 后端响应对象
+     * @param &lt;T&gt; 业务数据类型
+     * @return 成功时的业务数据
+     */
+    protected &lt;T&gt; T parseResponse(BackendResponse&lt;T&gt; response) {
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        if (response.isSuccess()) {</span>
+            // 成功：返回业务数据
+<span class="nc" id="L51">            return response.getData();</span>
+        } else {
+            // 失败：抛出异常（前端可捕获处理，或直接展示异常消息）
+<span class="nc" id="L54">            throw new RuntimeException(&quot;操作失败：&quot; + response.getMessage());</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

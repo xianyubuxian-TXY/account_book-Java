@@ -54,4 +54,5 @@ public abstract class BaseRequestHelper {
             throw new RuntimeException("操作失败：" + response.getMessage());
         }
     }
+
 }

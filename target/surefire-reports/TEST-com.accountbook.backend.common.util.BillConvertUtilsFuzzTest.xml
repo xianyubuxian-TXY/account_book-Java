@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="18002.863" tests="73" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="23"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="GBK"/>
+    <property name="java.class.path" value="E:\Tmp\account_book-Java\target\test-classes;E:\Tmp\account_book-Java\target\classes;E:\program_files\apache-maven-3.9.11\repository\com\mysql\mysql-connector-j\8.0.32\mysql-connector-j-8.0.32.jar;E:\program_files\apache-maven-3.9.11\repository\com\google\protobuf\protobuf-java\3.21.9\protobuf-java-3.21.9.jar;E:\program_files\apache-maven-3.9.11\repository\org\junit\jupiter\junit-jupiter-api\5.9.2\junit-jupiter-api-5.9.2.jar;E:\program_files\apache-maven-3.9.11\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;E:\program_files\apache-maven-3.9.11\repository\org\junit\platform\junit-platform-commons\1.9.2\junit-platform-commons-1.9.2.jar;E:\program_files\apache-maven-3.9.11\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;E:\program_files\apache-maven-3.9.11\repository\org\junit\jupiter\junit-jupiter-engine\5.9.2\junit-jupiter-engine-5.9.2.jar;E:\program_files\apache-maven-3.9.11\repository\org\junit\platform\junit-platform-engine\1.9.2\junit-platform-engine-1.9.2.jar;E:\program_files\apache-maven-3.9.11\repository\org\mockito\mockito-junit-jupiter\4.8.1\mockito-junit-jupiter-4.8.1.jar;E:\program_files\apache-maven-3.9.11\repository\org\mockito\mockito-core\4.8.1\mockito-core-4.8.1.jar;E:\program_files\apache-maven-3.9.11\repository\net\bytebuddy\byte-buddy\1.12.16\byte-buddy-1.12.16.jar;E:\program_files\apache-maven-3.9.11\repository\net\bytebuddy\byte-buddy-agent\1.12.16\byte-buddy-agent-1.12.16.jar;E:\program_files\apache-maven-3.9.11\repository\org\objenesis\objenesis\3.2\objenesis-3.2.jar;E:\program_files\apache-maven-3.9.11\repository\com\code-intelligence\jazzer-junit\0.24.0\jazzer-junit-0.24.0.jar;E:\program_files\apache-maven-3.9.11\repository\com\code-intelligence\jazzer-api\0.24.0\jazzer-api-0.24.0.jar;E:\program_files\apache-maven-3.9.11\repository\com\code-intelligence\jazzer\0.24.0\jazzer-0.24.0.jar;E:\program_files\apache-maven-3.9.11\repository\org\junit\jupiter\junit-jupiter-params\5.9.0\junit-jupiter-params-5.9.0.jar;E:\program_files\apache-maven-3.9.11\repository\org\junit\platform\junit-platform-launcher\1.9.0\junit-platform-launcher-1.9.0.jar;"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="java.vendor.url" value="https://java.oracle.com/"/>
+    <property name="user.timezone" value="Asia/Shanghai"/>
+    <property name="os.name" value="Windows 10"/>
+    <property name="java.vm.specification.version" value="23"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="CN"/>
+    <property name="sun.boot.library.path" value="E:\program_files\jdk\bin"/>
+    <property name="sun.java.command" value="C:\Users\Administrator\AppData\Local\Temp\surefire5412138526345702366\surefirebooter-20251215003755612_3.jar C:\Users\Administrator\AppData\Local\Temp\surefire5412138526345702366 2025-12-15T00-37-55_536-jvmRun1 surefire-20251215003755612_1tmp surefire_0-20251215003755612_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="test" value="BillConvertUtilsFuzzTest"/>
+    <property name="surefire.test.class.path" value="E:\Tmp\account_book-Java\target\test-classes;E:\Tmp\account_book-Java\target\classes;E:\program_files\apache-maven-3.9.11\repository\com\mysql\mysql-connector-j\8.0.32\mysql-connector-j-8.0.32.jar;E:\program_files\apache-maven-3.9.11\repository\com\google\protobuf\protobuf-java\3.21.9\protobuf-java-3.21.9.jar;E:\program_files\apache-maven-3.9.11\repository\org\junit\jupiter\junit-jupiter-api\5.9.2\junit-jupiter-api-5.9.2.jar;E:\program_files\apache-maven-3.9.11\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;E:\program_files\apache-maven-3.9.11\repository\org\junit\platform\junit-platform-commons\1.9.2\junit-platform-commons-1.9.2.jar;E:\program_files\apache-maven-3.9.11\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;E:\program_files\apache-maven-3.9.11\repository\org\junit\jupiter\junit-jupiter-engine\5.9.2\junit-jupiter-engine-5.9.2.jar;E:\program_files\apache-maven-3.9.11\repository\org\junit\platform\junit-platform-engine\1.9.2\junit-platform-engine-1.9.2.jar;E:\program_files\apache-maven-3.9.11\repository\org\mockito\mockito-junit-jupiter\4.8.1\mockito-junit-jupiter-4.8.1.jar;E:\program_files\apache-maven-3.9.11\repository\org\mockito\mockito-core\4.8.1\mockito-core-4.8.1.jar;E:\program_files\apache-maven-3.9.11\repository\net\bytebuddy\byte-buddy\1.12.16\byte-buddy-1.12.16.jar;E:\program_files\apache-maven-3.9.11\repository\net\bytebuddy\byte-buddy-agent\1.12.16\byte-buddy-agent-1.12.16.jar;E:\program_files\apache-maven-3.9.11\repository\org\objenesis\objenesis\3.2\objenesis-3.2.jar;E:\program_files\apache-maven-3.9.11\repository\com\code-intelligence\jazzer-junit\0.24.0\jazzer-junit-0.24.0.jar;E:\program_files\apache-maven-3.9.11\repository\com\code-intelligence\jazzer-api\0.24.0\jazzer-api-0.24.0.jar;E:\program_files\apache-maven-3.9.11\repository\com\code-intelligence\jazzer\0.24.0\jazzer-0.24.0.jar;E:\program_files\apache-maven-3.9.11\repository\org\junit\jupiter\junit-jupiter-params\5.9.0\junit-jupiter-params-5.9.0.jar;E:\program_files\apache-maven-3.9.11\repository\org\junit\platform\junit-platform-launcher\1.9.0\junit-platform-launcher-1.9.0.jar;"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="C:\Users\Administrator"/>
+    <property name="user.language" value="zh"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-01-21"/>
+    <property name="java.home" value="E:\program_files\jdk"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="E:\Tmp\account_book-Java"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="C:\Users\Administrator\AppData\Local\Temp\surefire5412138526345702366\surefirebooter-20251215003755612_3.jar"/>
+    <property name="user.script" value=""/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="23.0.2+7-58"/>
+    <property name="user.name" value="Administrator"/>
+    <property name="stdout.encoding" value="GBK"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="localRepository" value="E:\program_files\apache-maven-3.9.11\repository"/>
+    <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="C:\Users\Administrator\AppData\Local\Temp\"/>
+    <property name="java.version" value="23.0.2"/>
+    <property name="user.dir" value="E:\Tmp\account_book-Java"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="native.encoding" value="GBK"/>
+    <property name="java.library.path" value="E:\program_files\jdk\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;E:\program_files\Anaconda\condabin;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.3\bin;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.3\libnvvp;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.3\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.3\lib;E:\program_files\jdk\bin;D:\program_files\vmware\bin\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;D:\Windows Kits\10\Windows Performance Toolkit\;D:\program_files\MySQL\MySQL Server 8.0\bin;D:\program_files\xshell\;C:\Program Files\dotnet\;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\mingw64\bin\;E:\program_files\Git\cmd;C:\Program Files\NVIDIA Corporation\Nsight Compute 2023.3.0\;E:\program_files\apache-maven-3.9.11\bin;E:\nodejs\;E:\program_files\python-3.13.3\Scripts\;E:\program_files\python-3.13.3\;C:\Users\Administrator\.cargo\bin;D:\program_files\MySQL\MySQL Shell 8.0\bin\;C:\Users\Administrator\AppData\Local\Microsoft\WindowsApps;C:\Program Files (x86)\Tencent\QQGameTempest\Hall.58195\;C:\Users\Administrator\AppData\Local\Programs\Ollama;E:\program_files\Microsoft VS Code\bin;E:\program_files\IntelliJ IDEA 2024.3.3\bin;;C:\Program Files\mingw64\bin\;E:\program_files\cursor\resources\app\bin;E:\program_files\Anaconda;E:\program_files\Anaconda\Scripts;E:\program_files\Anaconda\Library\bin;;E:\program_files\pycharm\PyCharm 2024.3.6\bin;;E:\program_files\Antigravity\bin;C:\Users\Administrator\AppData\Roaming\npm;c:\Users\Administrator\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;c:\Users\Administrator\.vscode\extensions\vscjava.vscode-java-debug-0.58.4\bundled\scripts\noConfigScripts;."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="GBK"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.version" value="23.0.2+7-58"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="67.0"/>
+  </properties>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[1]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.052">
+    <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (C:\Users\Administrator\AppData\Local\Temp\byteBuddyAgent13159614462396952694.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+INFO: Loaded 308 hooks from com.code_intelligence.jazzer.runtime.TraceCmpHooks
+INFO: Loaded 5 hooks from com.code_intelligence.jazzer.runtime.TraceDivHooks
+INFO: Loaded 2 hooks from com.code_intelligence.jazzer.runtime.TraceIndirHooks
+INFO: Loaded 4 hooks from com.code_intelligence.jazzer.runtime.NativeLibHooks
+INFO: Loaded 2 hooks from com.code_intelligence.jazzer.sanitizers.ClojureLangHooks
+INFO: Loaded 5 hooks from com.code_intelligence.jazzer.sanitizers.Deserialization
+INFO: Loaded 5 hooks from com.code_intelligence.jazzer.sanitizers.ExpressionLanguageInjection
+INFO: Loaded 70 hooks from com.code_intelligence.jazzer.sanitizers.LdapInjection
+INFO: Loaded 46 hooks from com.code_intelligence.jazzer.sanitizers.NamingContextLookup
+INFO: Loaded 1 hooks from com.code_intelligence.jazzer.sanitizers.OsCommandInjection
+INFO: Loaded 60 hooks from com.code_intelligence.jazzer.sanitizers.ReflectiveCall
+INFO: Loaded 8 hooks from com.code_intelligence.jazzer.sanitizers.RegexInjection
+INFO: Loaded 16 hooks from com.code_intelligence.jazzer.sanitizers.RegexRoadblocks
+INFO: Loaded 12 hooks from com.code_intelligence.jazzer.sanitizers.ScriptEngineInjection
+INFO: Loaded 3 hooks from com.code_intelligence.jazzer.sanitizers.ServerSideRequestForgery
+INFO: Loaded 73 hooks from com.code_intelligence.jazzer.sanitizers.SqlInjection
+INFO: Loaded 6 hooks from com.code_intelligence.jazzer.sanitizers.XPathInjection
+INFO: Instrumented com.accountbook.backend.common.exception.BusinessServiceException (took 66 ms, size +44%)
+INFO: Instrumented com.accountbook.backend.common.util.BillConvertUtilsFuzzTest (took 11 ms, size +22%)
+WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@1682c08c can not be serialized as fuzzing inputs. Skipped.
+INFO: Instrumented com.accountbook.backend.common.util.BillConvertUtils (took 13 ms, size +17%)
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[2]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.015">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@4d84049a can not be serialized as fuzzing inputs. Skipped.
+INFO: Instrumented com.accountbook.backend.storage.entity.Bill (took 10 ms, size +14%)
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[3]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.003">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@4c6b4ed7 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[4]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@315105f can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[5]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.004">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@7b61bf11 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[6]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.003">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@2262d6d5 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[7]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@40de8f93 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[8]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@6ff0b1cc can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[9]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@3b55dd15 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[10]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@f3560d4 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[11]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.002">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@3ba3d4b6 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[12]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@28a9494b can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[13]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@a09303 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[14]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@1163a27 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[15]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@502a4156 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[16]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@5416f8db can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[17]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@b0fd744 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[18]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@92d1782 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[19]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@6a1ef65c can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[20]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.003">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@72976b4 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[21]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@726934e2 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[22]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.002">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@1319bc2a can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[23]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@e280403 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[24]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@42f85fa4 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[25]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@798dad3d can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[26]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@27abb6ca can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[27]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@696db620 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[28]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@6968c1d6 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[29]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@7d986d83 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[30]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@77f991c can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[31]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@3a7e365 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[32]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@2ceee4b6 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[33]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.004">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@12a470dd can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[34]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@6968bcec can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[35]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@5568c66f can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[36]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@e784320 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[37]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@3f6bf8aa can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[38]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@13c8ac77 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[39]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.002">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@4bdf can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[40]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@4cad79bc can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[41]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.002">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@2c63762b can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[42]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@7a9eccc4 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[43]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@78422efb can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[44]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@5f05c8d6 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[45]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@68e02f33 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[46]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@64942607 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[47]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@d48e998 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[48]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@7cfac39f can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[49]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@158ae284 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[50]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@50eb4a2c can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[51]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@1a256d80 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[52]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@3069a360 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[53]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@7235f92b can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[54]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@7885776b can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[55]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@497d4c96 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[56]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@3472947a can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[57]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@3a3ed300 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[58]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@1984212d can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[59]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@39f5b723 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[60]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.004">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@4eaa375c can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[61]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@2404b5a can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[62]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@3af58f76 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[63]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@2ead6ba4 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[64]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@31a2a9fa can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[65]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.002">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@27a09971 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[66]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.001">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@6215366a can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[67]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@46dcbeab can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[68]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@36e43829 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[69]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@152c4495 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[70]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@5ec1963c can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[71]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.0">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@7dcb42a9 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[72]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="0.004">
+    <system-err><![CDATA[WARN: JUnit arguments of type(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl with value(s) com.code_intelligence.jazzer.driver.FuzzedDataProviderImpl@6af90849 can not be serialized as fuzzing inputs. Skipped.
+]]></system-err>
+  </testcase>
+  <testcase name="fuzz_mapToBill(FuzzedDataProvider)[73]" classname="com.accountbook.backend.common.util.BillConvertUtilsFuzzTest" time="18001.025">
+    <system-err><![CDATA[INFO: using inputs from: \\?\E:\Tmp\account_book-Java\.cifuzz-corpus\com.accountbook.backend.common.util.BillConvertUtilsFuzzTest\fuzz_mapToBill
+INFO: using inputs from: C:\Users\Administrator\AppData\Local\Temp\jazzer-java-seeds7315657774980589347
+]]></system-err>
+  </testcase>
+</testsuite>

@@ -169,4 +169,5 @@ public class SpecificTypeRequestHelper extends BaseRequestHelper {
         FrontendRequest<SpecificTypeSearchParams> request = new FrontendRequest<>(RequestType.SEARCH_SPECIFIC_TYPE, emptyParams);
         return parseResponse(sendRequest(request));
     }
+
 }

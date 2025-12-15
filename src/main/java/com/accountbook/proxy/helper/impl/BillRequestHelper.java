@@ -189,5 +189,5 @@ public class BillRequestHelper extends BaseRequestHelper {
         FrontendRequest<BillSearchParams> request = new FrontendRequest<>(RequestType.SEARCH_BILL, emptyParams);
         return parseResponse(sendRequest(request));
     }
-    
+
 }

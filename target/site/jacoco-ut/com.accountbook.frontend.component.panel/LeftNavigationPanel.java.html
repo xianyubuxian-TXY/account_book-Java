@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LeftNavigationPanel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">accountbook</a> &gt; <a href="index.source.html" class="el_package">com.accountbook.frontend.component.panel</a> &gt; <span class="el_source">LeftNavigationPanel.java</span></div><h1>LeftNavigationPanel.java</h1><pre class="source lang-java linenums">package com.accountbook.frontend.component.panel;
+
+import com.accountbook.frontend.MainPage;
+import com.accountbook.frontend.component.PageDrawer;
+import com.accountbook.frontend.component.page.*;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.net.URL;
+
+public class LeftNavigationPanel extends JPanel {
+    private static final int NAV_WIDTH = 180;
+<span class="nc" id="L15">    private static final Color NAV_BG_COLOR = new Color(230, 240, 250);</span>
+<span class="nc" id="L16">    private static final Color BTN_BORDER_COLOR = new Color(200, 210, 220);</span>
+    private static final int BTN_FONT_SIZE = 16;
+    private static final int BTN_HEIGHT = 48;
+    private static final int BTN_GAP = 8;
+<span class="nc" id="L20">    private static final Color SELECTED_BG_COLOR = new Color(200, 220, 255);</span>
+
+    private JButton selectedButton;
+    private final JPanel contentPanel;
+    private final MainPage mainPage;
+
+<span class="nc" id="L26">    public LeftNavigationPanel(MainPage mainPage) {</span>
+<span class="nc" id="L27">        this.mainPage = mainPage;</span>
+<span class="nc" id="L28">        this.contentPanel = mainPage.getContentPanel();</span>
+<span class="nc" id="L29">        initUI();</span>
+<span class="nc" id="L30">    }</span>
+
+    public LeftNavigationPanel() {
+<span class="nc" id="L33">        this(new MainPage());</span>
+<span class="nc" id="L34">    }</span>
+
+    private void initUI() {
+<span class="nc" id="L37">        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));</span>
+<span class="nc" id="L38">        setPreferredSize(new Dimension(NAV_WIDTH, 0));</span>
+<span class="nc" id="L39">        setBackground(NAV_BG_COLOR);</span>
+
+        // 1. 标题区
+<span class="nc" id="L42">        add(createTitlePanel());</span>
+        // 2. 伸缩空白
+<span class="nc" id="L44">        add(Box.createVerticalGlue());</span>
+        // 3. 按钮组
+<span class="nc" id="L46">        createMenuButtons();</span>
+<span class="nc" id="L47">    }</span>
+
+    private JPanel createTitlePanel() {
+<span class="nc" id="L50">        JPanel titlePanel = new JPanel(new GridBagLayout());</span>
+<span class="nc" id="L51">        titlePanel.setBackground(NAV_BG_COLOR);</span>
+<span class="nc" id="L52">        titlePanel.setMaximumSize(new Dimension(NAV_WIDTH, Short.MAX_VALUE));</span>
+
+<span class="nc" id="L54">        JLabel titleLabel = new JLabel(&quot;记账本&quot;);</span>
+<span class="nc" id="L55">        titleLabel.setFont(new Font(&quot;微软雅黑&quot;, Font.BOLD, 28));</span>
+<span class="nc" id="L56">        titleLabel.setForeground(new Color(30, 80, 150));</span>
+<span class="nc" id="L57">        titlePanel.add(titleLabel);</span>
+
+<span class="nc" id="L59">        return titlePanel;</span>
+    }
+
+    private void createMenuButtons() {
+<span class="nc" id="L63">        MenuData[] menus = {</span>
+<span class="nc" id="L64">            new MenuData(&quot;系统首页&quot;,    &quot;home&quot;,     HomePage.getInstance(mainPage)),</span>
+            new MenuData(&quot;记账录入&quot;,    &quot;edit&quot;,     new RecordPage(mainPage)),
+            new MenuData(&quot;账单搜索&quot;,    &quot;search&quot;,   new SearchPage()),
+            new MenuData(&quot;账单统计&quot;,    &quot;chart&quot;,    new StatisticsPage()),
+            new MenuData(&quot;数据可视化&quot;,  &quot;pieChart&quot;, new VisualPage()),
+            new MenuData(&quot;预算管理&quot;,    &quot;money&quot;,    new BudgetPage()),
+            new MenuData(&quot;系统设置&quot;,    &quot;gear&quot;,     new SettingPage())
+        };
+
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        for (MenuData data : menus) {</span>
+<span class="nc" id="L74">            JButton btn = createMenuButton(data);</span>
+<span class="nc" id="L75">            add(btn);</span>
+<span class="nc" id="L76">            add(Box.createVerticalStrut(BTN_GAP));</span>
+        }
+<span class="nc" id="L78">    }</span>
+
+    private JButton createMenuButton(MenuData data) {
+<span class="nc" id="L81">        JButton button = new JButton(data.name);</span>
+<span class="nc" id="L82">        button.setHorizontalAlignment(SwingConstants.CENTER);</span>
+<span class="nc" id="L83">        button.setVerticalAlignment(SwingConstants.CENTER);</span>
+<span class="nc" id="L84">        button.setIcon(getIcon(data.iconName));</span>
+<span class="nc" id="L85">        button.setIconTextGap(6);</span>
+
+<span class="nc" id="L87">        button.setFont(new Font(&quot;微软雅黑&quot;, Font.PLAIN, BTN_FONT_SIZE));</span>
+<span class="nc" id="L88">        button.setForeground(Color.DARK_GRAY);</span>
+<span class="nc" id="L89">        button.setBackground(NAV_BG_COLOR);</span>
+
+<span class="nc" id="L91">        button.setMaximumSize(new Dimension(NAV_WIDTH - 16, BTN_HEIGHT));</span>
+<span class="nc" id="L92">        button.setPreferredSize(new Dimension(NAV_WIDTH - 16, BTN_HEIGHT));</span>
+<span class="nc" id="L93">        button.setAlignmentX(Component.CENTER_ALIGNMENT);</span>
+
+<span class="nc" id="L95">        button.setBorder(BorderFactory.createLineBorder(BTN_BORDER_COLOR));</span>
+<span class="nc" id="L96">        button.setContentAreaFilled(true);</span>
+<span class="nc" id="L97">        button.setOpaque(true);</span>
+<span class="nc" id="L98">        button.setFocusPainted(false);</span>
+
+<span class="nc" id="L100">        button.addMouseListener(new MouseAdapter() {</span>
+            @Override
+            public void mouseEntered(MouseEvent e) {
+<span class="nc bnc" id="L103" title="All 2 branches missed.">                if (button != selectedButton) button.setBackground(new Color(220, 230, 250));</span>
+<span class="nc" id="L104">            }</span>
+            @Override
+            public void mouseExited(MouseEvent e) {
+<span class="nc bnc" id="L107" title="All 2 branches missed.">                if (button != selectedButton) button.setBackground(NAV_BG_COLOR);</span>
+<span class="nc" id="L108">            }</span>
+        });
+<span class="nc" id="L110">        button.addActionListener(e -&gt; {</span>
+<span class="nc" id="L111">            selectButton(button);</span>
+<span class="nc" id="L112">            data.pageDrawer.draw(contentPanel);</span>
+<span class="nc" id="L113">        });</span>
+
+<span class="nc" id="L115">        return button;</span>
+    }
+
+    private void selectButton(JButton btn) {
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (selectedButton != null) selectedButton.setBackground(NAV_BG_COLOR);</span>
+<span class="nc" id="L120">        selectedButton = btn;</span>
+<span class="nc" id="L121">        selectedButton.setBackground(SELECTED_BG_COLOR);</span>
+<span class="nc" id="L122">    }</span>
+
+    private ImageIcon getIcon(String name) {
+<span class="nc" id="L125">        URL url = getClass().getResource(&quot;/icons/&quot; + name + &quot;.png&quot;);</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        if (url == null) return null;</span>
+<span class="nc" id="L127">        Image img = new ImageIcon(url).getImage()</span>
+<span class="nc" id="L128">                      .getScaledInstance(20, 20, Image.SCALE_SMOOTH);</span>
+<span class="nc" id="L129">        return new ImageIcon(img);</span>
+    }
+
+    private static class MenuData {
+        String name, iconName;
+        PageDrawer pageDrawer;
+<span class="nc" id="L135">        MenuData(String n, String i, PageDrawer p) {</span>
+<span class="nc" id="L136">            name = n; iconName = i; pageDrawer = p;</span>
+<span class="nc" id="L137">        }</span>
+    }
+
+    public static void main(String[] args) {
+<span class="nc" id="L141">        SwingUtilities.invokeLater(() -&gt; {</span>
+<span class="nc" id="L142">            JFrame frame = new JFrame(&quot;导航栏测试&quot;);</span>
+<span class="nc" id="L143">            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);</span>
+<span class="nc" id="L144">            frame.setSize(400, 600);</span>
+<span class="nc" id="L145">            frame.setLocationRelativeTo(null);</span>
+
+<span class="nc" id="L147">            JPanel content = new JPanel();</span>
+<span class="nc" id="L148">            content.setBackground(Color.WHITE);</span>
+
+<span class="nc" id="L150">            LeftNavigationPanel nav = new LeftNavigationPanel(new MainPage());</span>
+<span class="nc" id="L151">            frame.setLayout(new BorderLayout());</span>
+<span class="nc" id="L152">            frame.add(nav, BorderLayout.WEST);</span>
+<span class="nc" id="L153">            frame.add(content, BorderLayout.CENTER);</span>
+<span class="nc" id="L154">            frame.setVisible(true);</span>
+<span class="nc" id="L155">        });</span>
+<span class="nc" id="L156">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>
